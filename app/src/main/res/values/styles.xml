@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="AppSearchViewList" parent="Widget.AppCompat.SearchView" xmlns="http://www.w3.org/1999/XSL/Transform">
+        <item name="android:textColorPrimary">@color/white</item>
+        <!-- Hint Color -->
+        <item name="android:textColorHint">@color/textColorDisabled</item>
+        <!-- Icon Color -->
+        <item name="android:tint">@color/white</item>
+    </style>
+</resources>

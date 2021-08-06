@@ -1,3 +1,11 @@
 <resources>
-    <string name="app_name">FindFilmApp</string>
+    <string name="app_name">My Film Application</string>
+    <string name="item_bot_menu_list_films">список</string>
+    <string name="item_bot_menu_settings">настройки</string>
+    <string name="app_bar_search">поиск</string>
+    <string name="some_film_name">Некоторое название</string>
+    <string name="list_of_films_title">Спиок фильмов</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="temp_text_in_fragments">здесь скоро будет чисто и красиво</string>
 </resources>
