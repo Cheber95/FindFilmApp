@@ -2,14 +2,28 @@ package ru.chebertests.findfilmapp.viewmodel
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.core.net.toUri
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
+import kotlinx.coroutines.currentCoroutineContext
 import ru.chebertests.findfilmapp.R
 import ru.chebertests.findfilmapp.databinding.FilmCardItemBinding
 import ru.chebertests.findfilmapp.model.Film
+import ru.chebertests.findfilmapp.view.ListFilmFragment
 
-class FilmListAdapter : RecyclerView.Adapter<FilmListAdapter.FilmViewHolder>() {
+class FilmListAdapter() :
+    RecyclerView.Adapter<FilmListAdapter.FilmViewHolder>() {
 
+    private var onFilmClickListener: ListFilmFragment.OnFilmClickListener? = null
     private var filmData: List<Film> = listOf()
+
+    fun setFilmListener(onFilmClickListener: ListFilmFragment.OnFilmClickListener?) {
+        this.onFilmClickListener = onFilmClickListener
+    }
+
+    fun removeListener() {
+        onFilmClickListener = null
+    }
 
     fun setFilmData(newFilmData: List<Film>) {
         this.filmData = newFilmData
@@ -33,12 +47,17 @@ class FilmListAdapter : RecyclerView.Adapter<FilmListAdapter.FilmViewHolder>() {
         return filmData.size
     }
 
-    class FilmViewHolder(val binding: FilmCardItemBinding) :
+    inner class FilmViewHolder(val binding: FilmCardItemBinding) :
         RecyclerView.ViewHolder(binding.root) {
         fun bind(film: Film) {
             binding.nameOfFilm.text = film.name;
-            binding.posterFilmUrl.setImageResource(R.drawable.ic_launcher_background) //TODO
+            Glide
+                .with(binding.root.context)
+                .load(film.posterPath.toUri())
+                .into(binding.posterFilm)
+            binding.root.setOnClickListener {
+                onFilmClickListener?.onFilmClick(film)
+            }
         }
     }
-
 }
