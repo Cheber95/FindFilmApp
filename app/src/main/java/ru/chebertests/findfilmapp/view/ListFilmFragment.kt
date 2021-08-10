@@ -1,11 +1,9 @@
 package ru.chebertests.findfilmapp.view
 
-import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -15,7 +13,6 @@ import ru.chebertests.findfilmapp.model.Film
 import ru.chebertests.findfilmapp.model.repository.FilmLocalRepository
 import ru.chebertests.findfilmapp.viewmodel.FilmListAdapter
 import ru.chebertests.findfilmapp.viewmodel.MainViewModel
-import ru.chebertests.findfilmapp.view.ListFilmFragment.OnFilmClickListener as OnFilmClickListener
 
 class ListFilmFragment : Fragment() {
 
@@ -28,10 +25,6 @@ class ListFilmFragment : Fragment() {
         fun onFilmClick(film: Film)
     }
 
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-    }
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -40,24 +33,26 @@ class ListFilmFragment : Fragment() {
 
         val localRepository = FilmLocalRepository()
 
-        val recyclerListFilms = binding.listOfFilms
-        adapter.setFilmData(localRepository.getData())
-        recyclerListFilms.adapter = adapter
-        recyclerListFilms.layoutManager =
-            LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
+        with(adapter){
+            setFilmData(localRepository.getData())
+            setFilmListener(object : OnFilmClickListener {
+                override fun onFilmClick(film: Film) {
+                    val manager = parentFragmentManager
+                    val bundle = Bundle()
+                    bundle.putParcelable(FilmDetailFragment.BUNDLE_EXTRA, film)
+                    manager
+                        .beginTransaction()
+                        .replace(R.id.container_general, FilmDetailFragment.newInstance(bundle))
+                        .addToBackStack(FilmDetailFragment.BUNDLE_EXTRA)
+                        .commit()
+                }
+            })
+        }
 
-        adapter.setFilmListener(object : OnFilmClickListener {
-            override fun onFilmClick(film: Film) {
-                val manager = parentFragmentManager
-                val bundle = Bundle()
-                bundle.putParcelable(FilmDetailFragment.BUNDLE_EXTRA,film)
-                manager
-                    .beginTransaction()
-                    .replace(R.id.container_general, FilmDetailFragment.newInstance(bundle))
-                    .addToBackStack(FilmDetailFragment.BUNDLE_EXTRA)
-                    .commit()
-            }
-        })
+        binding.listOfFilms.also {
+            it.adapter = this.adapter
+            it.layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
+        }
 
         return binding.root
     }
@@ -70,12 +65,10 @@ class ListFilmFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
-        adapter.removeListener()
+        adapter::removeListener
     }
 
     companion object {
-        fun newInstance(): ListFilmFragment {
-            return ListFilmFragment()
-        }
+        fun newInstance() = ListFilmFragment()
     }
 }
