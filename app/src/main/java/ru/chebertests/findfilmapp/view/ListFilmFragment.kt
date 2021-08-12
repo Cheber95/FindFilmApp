@@ -1,9 +1,11 @@
 package ru.chebertests.findfilmapp.view
 
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.annotation.RequiresApi
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -11,6 +13,7 @@ import ru.chebertests.findfilmapp.R
 import ru.chebertests.findfilmapp.databinding.FilmListFragmentBinding
 import ru.chebertests.findfilmapp.model.Film
 import ru.chebertests.findfilmapp.model.repository.FilmLocalRepository
+import ru.chebertests.findfilmapp.model.repository.FilmRemoteRepository
 import ru.chebertests.findfilmapp.viewmodel.FilmListAdapter
 import ru.chebertests.findfilmapp.viewmodel.MainViewModel
 
@@ -25,6 +28,7 @@ class ListFilmFragment : Fragment() {
         fun onFilmClick(film: Film)
     }
 
+    @RequiresApi(Build.VERSION_CODES.N)
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -32,9 +36,10 @@ class ListFilmFragment : Fragment() {
         _binding = FilmListFragmentBinding.inflate(inflater, container, false)
 
         val localRepository = FilmLocalRepository()
+        val remoteRepository = FilmRemoteRepository()
 
         with(adapter){
-            setFilmData(localRepository.getData())
+            setFilmData(remoteRepository.getData())
             setFilmListener(object : OnFilmClickListener {
                 override fun onFilmClick(film: Film) {
                     val manager = parentFragmentManager
