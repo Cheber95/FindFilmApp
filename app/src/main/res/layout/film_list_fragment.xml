@@ -15,8 +15,7 @@
         <Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            >
+            android:layout_height="wrap_content">
 
             <androidx.appcompat.widget.SearchView
                 android:id="@+id/list_search"
@@ -37,13 +36,15 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/list_of_films_title"
-            android:textAppearance="@style/TextAppearance.MaterialComponents.Headline5" />
+            android:textAppearance="@style/TextAppearance.MaterialComponents.Headline5"
+            android:layout_marginStart="@dimen/card_list_margin"/>
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/list_of_films"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal" />
+            android:orientation="horizontal"
+            android:layout_marginStart="@dimen/card_list_margin"/>
 
     </LinearLayout>
 

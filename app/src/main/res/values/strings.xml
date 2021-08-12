@@ -4,8 +4,7 @@
     <string name="item_bot_menu_settings">настройки</string>
     <string name="app_bar_search">поиск</string>
     <string name="some_film_name">Некоторое название</string>
-    <string name="list_of_films_title">Спиок фильмов</string>
-    <!-- TODO: Remove or change this placeholder text -->
+    <string name="list_of_films_title">Список фильмов</string>
     <string name="hello_blank_fragment">Hello blank fragment</string>
-    <string name="temp_text_in_fragments">здесь скоро будет чисто и красиво</string>
+    <string name="temp_text_in_fragments">скоро здесь будет чисто и красиво</string>
 </resources>

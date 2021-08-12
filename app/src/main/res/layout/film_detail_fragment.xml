@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/film_name_full"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/card_list_margin"
+                android:gravity="center"
+                android:textAppearance="@style/TextAppearance.MaterialComponents.Headline4"
+                tools:text="@string/some_film_name" />
+
+            <ImageView
+                android:id="@+id/poster_full"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/poster_details_height"
+                android:layout_marginStart="@dimen/poster_details_margin"
+                android:layout_marginEnd="@dimen/poster_details_margin"
+                android:scaleType="centerCrop"
+                tools:src="@drawable/ic_launcher_background" />
+
+            <TextView
+                android:id="@+id/country_and_year_film_full"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/card_list_margin"
+                android:layout_marginTop="@dimen/card_list_margin"
+                android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                tools:text="@string/some_film_name" />
+
+            <TextView
+                android:id="@+id/genre"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/card_list_margin"
+                android:layout_marginTop="@dimen/card_list_margin"
+                android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                tools:text="@string/some_film_name" />
+
+            <TextView
+                android:id="@+id/overview_full"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/card_list_margin"
+                android:textAppearance="@style/TextAppearance.AppCompat.Small"
+                tools:text="@string/fight_club_overview" />
+
+        </LinearLayout>
+
+    </ScrollView>
+
+</FrameLayout>
