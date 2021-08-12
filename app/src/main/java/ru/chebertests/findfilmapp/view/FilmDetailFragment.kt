@@ -1,6 +1,5 @@
 package ru.chebertests.findfilmapp.view
 
-import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -22,32 +21,24 @@ class FilmDetailFragment : Fragment() {
     ): View {
         _binding = FilmDetailFragmentBinding.inflate(inflater, container, false)
 
-        val film = arguments?.getParcelable<Film>(BUNDLE_EXTRA)
-
-        binding.filmNameFull.text = film!!.name
-        Glide
-            .with(binding.root)
-            .load(film.posterPath.toUri())
-            .into(binding.posterFull)
-        binding.countryAndYearFilmFull.text = "${film.country}, ${film.year.toString()}"
-        binding.genre.text = film.genreIds.toString()
-        binding.overviewFull.text = getString(film.overview.toInt())
+        val film = arguments?.getParcelable<Film>(BUNDLE_EXTRA)?.let {
+            binding.apply {
+                filmNameFull.text = it.name
+                Glide
+                    .with(root)
+                    .load(it.posterPath.toUri())
+                    .into(posterFull)
+                countryAndYearFilmFull.text = "${it.country}, ${it.year.toString()}"
+                genre.text = it.genreIds.toString()
+                overviewFull.text = getString(it.overview.toInt())
+            }
+        }
 
         return binding.root
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-    }
-
     companion object {
-
         const val BUNDLE_EXTRA = "FILM"
-
-        fun newInstance(bundle: Bundle): FilmDetailFragment {
-            val fragment = FilmDetailFragment()
-            fragment.arguments = bundle
-            return fragment
-        }
+        fun newInstance(bundle: Bundle) = FilmDetailFragment().apply { arguments = bundle }
     }
 }

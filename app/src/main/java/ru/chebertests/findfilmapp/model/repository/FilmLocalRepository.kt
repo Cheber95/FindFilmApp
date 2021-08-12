@@ -1,15 +1,11 @@
 package ru.chebertests.findfilmapp.model.repository
 
-import android.app.Application
-import android.content.res.Resources
-import androidx.fragment.app.Fragment
 import ru.chebertests.findfilmapp.R
 import ru.chebertests.findfilmapp.model.Film
-import ru.chebertests.findfilmapp.view.MainActivity
 
 class FilmLocalRepository : IFilmRepository {
 
-    val filmsData = listOf<Film>(
+    override fun getData() = listOf<Film>(
         Film(
             0,
             "Бойцовский клуб",
@@ -17,7 +13,8 @@ class FilmLocalRepository : IFilmRepository {
             R.string.fight_club_overview.toString(),
             1999,
             "Германия, США",
-            listOf(1,2,3)),
+            listOf(1, 2, 3)
+        ),
         Film(
             1,
             "Д`Артаньян и три мушкетера",
@@ -25,7 +22,8 @@ class FilmLocalRepository : IFilmRepository {
             R.string.three_mush_overview.toString(),
             1979,
             "СССР",
-            listOf(4,5,6)),
+            listOf(4, 5, 6)
+        ),
         Film(
             2,
             "Судный день",
@@ -33,7 +31,8 @@ class FilmLocalRepository : IFilmRepository {
             R.string.doomsday_overview.toString(),
             2008,
             "Великобритания, США, ЮАР, Германия",
-            listOf(7,8,2)),
+            listOf(7, 8, 2)
+        ),
         Film(
             3,
             "Бойцовский клуб",
@@ -41,7 +40,8 @@ class FilmLocalRepository : IFilmRepository {
             R.string.fight_club_overview.toString(),
             1999,
             "Германия, США",
-            listOf(1,2,3)),
+            listOf(1, 2, 3)
+        ),
         Film(
             4,
             "Д`Артаньян и три мушкетера",
@@ -49,7 +49,8 @@ class FilmLocalRepository : IFilmRepository {
             R.string.three_mush_overview.toString(),
             1979,
             "СССР",
-            listOf(4,5,6)),
+            listOf(4, 5, 6)
+        ),
         Film(
             5,
             "Судный день",
@@ -57,10 +58,8 @@ class FilmLocalRepository : IFilmRepository {
             R.string.doomsday_overview.toString(),
             2008,
             "Великобритания, США, ЮАР, Германия",
-            listOf(7,8,2))
+            listOf(7, 8, 2)
+        )
     )
 
-    override fun getData(): List<Film> {
-        return filmsData
-    }
 }

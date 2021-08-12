@@ -7,7 +7,6 @@ import android.view.View
 import android.view.ViewGroup
 import ru.chebertests.findfilmapp.databinding.FragmentSettingsBinding
 
-
 class SettingsFragment : Fragment() {
 
     private var _binding: FragmentSettingsBinding? = null
@@ -31,8 +30,6 @@ class SettingsFragment : Fragment() {
     }
 
     companion object {
-        fun newInstance(): SettingsFragment {
-            return SettingsFragment()
-        }
+        fun newInstance() = SettingsFragment()
     }
 }

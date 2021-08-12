@@ -2,7 +2,6 @@ package ru.chebertests.findfilmapp.model
 
 import android.os.Parcelable
 import kotlinx.android.parcel.Parcelize
-import java.io.FileDescriptor
 
 @Parcelize
 data class Film(
