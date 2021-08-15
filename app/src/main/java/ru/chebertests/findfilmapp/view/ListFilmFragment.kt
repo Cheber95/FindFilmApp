@@ -11,6 +11,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import ru.chebertests.findfilmapp.R
 import ru.chebertests.findfilmapp.databinding.FilmListFragmentBinding
+import ru.chebertests.findfilmapp.model.Callback
 import ru.chebertests.findfilmapp.model.Film
 import ru.chebertests.findfilmapp.model.repository.FilmLocalRepository
 import ru.chebertests.findfilmapp.model.repository.FilmRemoteRepository
@@ -35,11 +36,15 @@ class ListFilmFragment : Fragment() {
     ): View {
         _binding = FilmListFragmentBinding.inflate(inflater, container, false)
 
-        val localRepository = FilmLocalRepository()
+        //val localRepository = FilmLocalRepository()
         val remoteRepository = FilmRemoteRepository()
 
         with(adapter){
-            setFilmData(remoteRepository.getData())
+            remoteRepository.getData(callback = object : Callback<List<Film>> {
+                override fun onSuccess(type: List<Film>) {
+                    setFilmData(type)
+                }
+            })
             setFilmListener(object : OnFilmClickListener {
                 override fun onFilmClick(film: Film) {
                     val manager = parentFragmentManager

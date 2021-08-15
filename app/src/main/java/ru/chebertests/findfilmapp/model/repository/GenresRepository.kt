@@ -7,8 +7,10 @@ import android.util.Log
 import androidx.annotation.RequiresApi
 import com.google.gson.Gson
 import ru.chebertests.findfilmapp.BuildConfig
-import ru.chebertests.findfilmapp.model.Film
-import ru.chebertests.findfilmapp.model.dto.*
+import ru.chebertests.findfilmapp.model.Callback
+import ru.chebertests.findfilmapp.model.dto.FilmsDTO
+import ru.chebertests.findfilmapp.model.dto.GenreDTO
+import ru.chebertests.findfilmapp.model.dto.GenresDTO
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.lang.Exception
@@ -16,38 +18,39 @@ import java.net.MalformedURLException
 import java.net.URL
 import java.util.stream.Collectors
 import javax.net.ssl.HttpsURLConnection
-import ru.chebertests.findfilmapp.model.Callback
 
 private const val API_KEY = BuildConfig.TMDB_API_KEY
 private const val LANG = "ru-RU"
 
-class FilmRemoteRepository : IFilmRepository {
+class GenresRepository : IGenresRepository {
 
-    private val filmRepository: MutableList<Film> = mutableListOf()
+    private lateinit var genresRepository : List<GenreDTO>
 
     @RequiresApi(Build.VERSION_CODES.N)
-    override fun getData(callback: Callback<List<Film>>) {
+    override fun getGenres(callback: Callback<List<GenreDTO>>) {
         val handler = Handler(Looper.getMainLooper())
         try {
             Thread(Runnable {
-                val uriFilms =
-                    URL("https://api.themoviedb.org/3/discover/movie?api_key=$API_KEY&language=$LANG")
+                val uriGenres =
+                    URL("https://api.themoviedb.org/3/genre/movie/list?api_key=$API_KEY&language=$LANG")
 
                 lateinit var urlConnection: HttpsURLConnection
                 try {
-                    urlConnection = uriFilms.openConnection() as HttpsURLConnection
+                    urlConnection = uriGenres.openConnection() as HttpsURLConnection
                     urlConnection.requestMethod = "GET"
                     urlConnection.readTimeout = 10000
-                    val bufferedReaderFilms =
+                    val bufferedReaderGenres =
                         BufferedReader(InputStreamReader(urlConnection.inputStream))
-                    val filmsDTO = Gson().fromJson<FilmsDTO>(
-                        getLines(bufferedReaderFilms),
-                        FilmsDTO::class.java
+                    val genresDTO = Gson().fromJson<GenresDTO>(
+                        getLines(bufferedReaderGenres),
+                        GenresDTO::class.java
                     )
                     urlConnection.disconnect()
 
-                    filmsParser(filmsDTO)
-                    handler.post(Runnable { callback.onSuccess(filmRepository) })
+                    genresRepository = genresDTO.genres!!
+                    handler.post(Runnable {
+                        callback.onSuccess(genresRepository)
+                    })
 
                 } catch (e: Exception) {
                     Log.e("", "Fail connection", e)
@@ -62,28 +65,13 @@ class FilmRemoteRepository : IFilmRepository {
         }
     }
 
-    private fun filmsParser(filmsFromAPI: FilmsDTO) {
+    @RequiresApi(Build.VERSION_CODES.N)
+    private fun loadData() {
 
-        for (filmDTO: FilmDTO in filmsFromAPI.results) {
-            val currentFilm: Film = Film(
-                filmDTO.id!!,
-                filmDTO.title!!,
-                "https://image.tmdb.org/t/p/original/" + filmDTO.poster_path!!,
-                filmDTO.overview!!,
-                releaseDateParser(filmDTO.release_date!!),
-                "Россия",
-                filmDTO.genre_ids!!
-            )
-            filmRepository.add(currentFilm)
-        }
     }
 
     @RequiresApi(Build.VERSION_CODES.N)
     private fun getLines(reader: BufferedReader): String {
         return reader.lines().collect(Collectors.joining("\n"))
-    }
-
-    private fun releaseDateParser(dateOnString: String): Int {
-        return dateOnString.substring(0, 4).toInt()
     }
 }

@@ -6,7 +6,7 @@ data class FilmDTO(
     val poster_path: String?,
     val overview: String?,
     val release_date: String?,
-    val production_countries: CountriesDTO?,
-    val genres: GenresDTO?
+    //val production_countries: CountriesDTO?,
+    val genre_ids: List<Int>?
 
 )
