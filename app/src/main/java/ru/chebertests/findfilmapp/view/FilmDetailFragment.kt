@@ -13,6 +13,7 @@ import ru.chebertests.findfilmapp.databinding.FilmDetailFragmentBinding
 import ru.chebertests.findfilmapp.model.Callback
 import ru.chebertests.findfilmapp.model.Film
 import ru.chebertests.findfilmapp.model.dto.GenreDTO
+import ru.chebertests.findfilmapp.model.repository.CountryLoader
 import ru.chebertests.findfilmapp.model.repository.GenresRepository
 
 class FilmDetailFragment : Fragment() {
@@ -42,6 +43,7 @@ class FilmDetailFragment : Fragment() {
                         countryAndYearFilmFull.text = "${it.country}, ${it.year.toString()}"
                         genre.text = genresParser(it.genreIds)
                         overviewFull.text = it.overview
+
                     }
                 }
             }

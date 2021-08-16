@@ -6,7 +6,7 @@ import ru.chebertests.findfilmapp.model.Film
 
 class FilmLocalRepository : IFilmRepository {
 
-    override fun getData(callback: Callback<List<Film>>) {
+    override fun getData(callback: Callback<List<Film>>, genreID: Int?) {
         callback.onSuccess(
             listOf<Film>(
                 Film(

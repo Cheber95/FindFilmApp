@@ -26,12 +26,21 @@ class FilmRemoteRepository : IFilmRepository {
     private val filmRepository: MutableList<Film> = mutableListOf()
 
     @RequiresApi(Build.VERSION_CODES.N)
-    override fun getData(callback: Callback<List<Film>>) {
+    override fun getData(callback: Callback<List<Film>>, genreID: Int?) {
         val handler = Handler(Looper.getMainLooper())
         try {
             Thread(Runnable {
-                val uriFilms =
-                    URL("https://api.themoviedb.org/3/discover/movie?api_key=$API_KEY&language=$LANG")
+
+                val urlBase : String = "https://api.themoviedb.org/3/discover/movie" +
+                "?api_key=$API_KEY" +
+                "&language=$LANG" +
+                "&sort_by=vote_count.desc"
+                var urlGenre : String = ""
+                if (genreID != null) {
+                    urlGenre = "&with_genres=${genreID.toString()}"
+                }
+
+                val uriFilms = URL(urlBase + urlGenre)
 
                 lateinit var urlConnection: HttpsURLConnection
                 try {

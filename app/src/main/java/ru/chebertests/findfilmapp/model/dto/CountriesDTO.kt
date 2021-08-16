@@ -1,5 +1,5 @@
 package ru.chebertests.findfilmapp.model.dto
 
 data class CountriesDTO (
-    val countries: MutableList<CountryDTO>?
+    val production_countries: List<CountryDTO>?
 )
