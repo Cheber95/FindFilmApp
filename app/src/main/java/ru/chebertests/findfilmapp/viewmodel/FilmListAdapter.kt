@@ -51,6 +51,8 @@ class FilmListAdapter :
                         .with(root.context)
                         .load(posterPath.toUri())
                         .into(posterFilm)
+                    filmRating.text = voteAverage.toString()
+                    filmDate.text = year.toString()
                 }
                 root.setOnClickListener {
                     onFilmClickListener?.onFilmClick(film)

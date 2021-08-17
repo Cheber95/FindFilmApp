@@ -8,8 +8,7 @@ data class Film(
     val id: Int,
     val name: String,
     val posterPath: String,
-    val overview: String,
-    val year: Int,
-    val country: String,
-    val genreIds: List<Int>
+    val voteAverage: Double,
+    val year: Int
 ) : Parcelable
+

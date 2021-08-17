@@ -52,6 +52,24 @@
                 tools:text="@string/some_film_name" />
 
             <TextView
+                android:id="@+id/budget"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/card_list_margin"
+                android:layout_marginTop="@dimen/card_list_margin"
+                android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                tools:text="@string/some_film_name" />
+
+            <TextView
+                android:id="@+id/rating"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/card_list_margin"
+                android:layout_marginTop="@dimen/card_list_margin"
+                android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                tools:text="@string/some_film_name" />
+
+            <TextView
                 android:id="@+id/overview_full"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

@@ -5,10 +5,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.LinearLayout
-import android.widget.TextView
 import androidx.annotation.RequiresApi
-import androidx.core.view.marginStart
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -19,8 +16,6 @@ import ru.chebertests.findfilmapp.databinding.FilmListFragmentBinding
 import ru.chebertests.findfilmapp.model.Callback
 import ru.chebertests.findfilmapp.model.Film
 import ru.chebertests.findfilmapp.model.dto.GenreDTO
-import ru.chebertests.findfilmapp.model.dto.GenresDTO
-import ru.chebertests.findfilmapp.model.repository.FilmLocalRepository
 import ru.chebertests.findfilmapp.model.repository.FilmRemoteRepository
 import ru.chebertests.findfilmapp.model.repository.GenresRepository
 import ru.chebertests.findfilmapp.viewmodel.FilmListAdapter
@@ -45,7 +40,6 @@ class ListFilmFragment : Fragment() {
     ): View {
         _binding = FilmListFragmentBinding.inflate(inflater, container, false)
 
-        //val localRepository = FilmLocalRepository()
         val remoteRepository = FilmRemoteRepository()
 
         with(adapter){
@@ -74,21 +68,21 @@ class ListFilmFragment : Fragment() {
         }
 
         genresRepository.getGenres(callback = object : Callback<List<GenreDTO>> {
-            override fun onSuccess(type: List<GenreDTO>) {
-                for (genre in type) {
+            override fun onSuccess(result: List<GenreDTO>) {
+                for (genre in result) {
                     val subtitle = MaterialTextView(binding.listsContainer.context).apply {
                         text = genre.name?.replaceFirstChar { it.uppercase() }
                         layoutParams = binding.listsContainer.layoutParams
                         setTextAppearance(R.style.TextAppearance_MaterialComponents_Headline5)
                     }
                     binding.listsContainer.addView(subtitle)
-                    //var adapter = FilmListAdapter()
+
                     val remoteRepositoryByGenre = FilmRemoteRepository()
-                    val genreAdapter = FilmListAdapter()
-                    with(genreAdapter){
+                    val byGenreAdapter = FilmListAdapter()
+                    with(byGenreAdapter){
                         remoteRepositoryByGenre.getData(callback = object : Callback<List<Film>> {
-                            override fun onSuccess(type: List<Film>) {
-                                setFilmData(type)
+                            override fun onSuccess(result: List<Film>) {
+                                setFilmData(result)
                             }
                         },genre.id)
                         setFilmListener(object : OnFilmClickListener {
@@ -106,7 +100,7 @@ class ListFilmFragment : Fragment() {
                     }
 
                     binding.listsContainer.addView(RecyclerView(binding.listsContainer.context).apply {
-                        adapter = genreAdapter
+                        adapter = byGenreAdapter
                         layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
                     })
                 }

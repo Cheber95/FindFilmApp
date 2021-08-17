@@ -33,8 +33,7 @@ class FilmRemoteRepository : IFilmRepository {
 
                 val urlBase : String = "https://api.themoviedb.org/3/discover/movie" +
                 "?api_key=$API_KEY" +
-                "&language=$LANG" +
-                "&sort_by=vote_count.desc"
+                "&language=$LANG"
                 var urlGenre : String = ""
                 if (genreID != null) {
                     urlGenre = "&with_genres=${genreID.toString()}"
@@ -71,17 +70,56 @@ class FilmRemoteRepository : IFilmRepository {
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.N)
+    override fun getFilm(callback: Callback<FilmDetailDTO>, filmID: Int) {
+        val handler = Handler(Looper.getMainLooper())
+        try {
+            Thread(Runnable {
+
+                val url : String = "https://api.themoviedb.org/3/movie/$filmID" +
+                        "?api_key=$API_KEY" +
+                        "&language=$LANG"
+
+                val uriFilms = URL(url)
+
+                lateinit var urlConnection: HttpsURLConnection
+                try {
+                    urlConnection = uriFilms.openConnection() as HttpsURLConnection
+                    urlConnection.requestMethod = "GET"
+                    urlConnection.readTimeout = 10000
+                    val bufferedReaderFilms =
+                        BufferedReader(InputStreamReader(urlConnection.inputStream))
+                    val filmDetailDTO = Gson().fromJson<FilmDetailDTO>(
+                        getLines(bufferedReaderFilms),
+                        FilmDetailDTO::class.java
+                    )
+                    urlConnection.disconnect()
+
+                    handler.post(Runnable { callback.onSuccess(filmDetailDTO) })
+
+                } catch (e: Exception) {
+                    Log.e("", "Fail connection", e)
+                    e.printStackTrace()
+                } finally {
+                    urlConnection.disconnect()
+                }
+            }).start()
+        } catch (e: MalformedURLException) {
+            Log.e("", "Fail URI", e)
+            e.printStackTrace()
+        }
+    }
+
     private fun filmsParser(filmsFromAPI: FilmsDTO) {
 
-        for (filmDTO: FilmDTO in filmsFromAPI.results) {
+        for (filmToListDTO: FilmToListDTO in filmsFromAPI.results) {
+
             val currentFilm: Film = Film(
-                filmDTO.id!!,
-                filmDTO.title!!,
-                "https://image.tmdb.org/t/p/original/" + filmDTO.poster_path!!,
-                filmDTO.overview!!,
-                releaseDateParser(filmDTO.release_date!!),
-                "Россия",
-                filmDTO.genre_ids!!
+                filmToListDTO.id!!,
+                filmToListDTO.title!!,
+                "https://image.tmdb.org/t/p/original/" + filmToListDTO.poster_path!!,
+                filmToListDTO.vote_average!!,
+                releaseDateParser(filmToListDTO.release_date!!),
             )
             filmRepository.add(currentFilm)
         }

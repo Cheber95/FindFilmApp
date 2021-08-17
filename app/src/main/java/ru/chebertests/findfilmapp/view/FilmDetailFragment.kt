@@ -12,15 +12,18 @@ import com.bumptech.glide.Glide
 import ru.chebertests.findfilmapp.databinding.FilmDetailFragmentBinding
 import ru.chebertests.findfilmapp.model.Callback
 import ru.chebertests.findfilmapp.model.Film
+import ru.chebertests.findfilmapp.model.dto.CountryDTO
+import ru.chebertests.findfilmapp.model.dto.FilmDetailDTO
 import ru.chebertests.findfilmapp.model.dto.GenreDTO
 import ru.chebertests.findfilmapp.model.repository.CountryLoader
+import ru.chebertests.findfilmapp.model.repository.FilmRemoteRepository
 import ru.chebertests.findfilmapp.model.repository.GenresRepository
 
 class FilmDetailFragment : Fragment() {
 
     private var _binding: FilmDetailFragmentBinding? = null
     private val binding get() = _binding!!
-    private val genresRepository = GenresRepository()
+    private val filmRepository = FilmRemoteRepository()
     private lateinit var genres: List<GenreDTO>
 
     @RequiresApi(Build.VERSION_CODES.N)
@@ -29,38 +32,52 @@ class FilmDetailFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = FilmDetailFragmentBinding.inflate(inflater, container, false)
-        genresRepository.getGenres(callback = object : Callback<List<GenreDTO>> {
-            override fun onSuccess(type: List<GenreDTO>) {
-                genres = type
-
-                arguments?.getParcelable<Film>(BUNDLE_EXTRA)?.let {
+        val currentFilm = arguments?.getParcelable<Film>(BUNDLE_EXTRA)
+        currentFilm?.let {
+            filmRepository.getFilm(callback = object : Callback<FilmDetailDTO> {
+                override fun onSuccess(result: FilmDetailDTO) {
                     binding.apply {
-                        filmNameFull.text = it.name
-                        Glide
-                            .with(root)
-                            .load(it.posterPath.toUri())
-                            .into(posterFull)
-                        countryAndYearFilmFull.text = "${it.country}, ${it.year.toString()}"
-                        genre.text = genresParser(it.genreIds)
-                        overviewFull.text = it.overview
-
+                        result.let { res ->
+                            filmNameFull.text = res.title
+                            Glide
+                                .with(root)
+                                .load(currentFilm.posterPath)
+                                .into(posterFull)
+                            countryAndYearFilmFull.text =
+                                "${res.production_countries?.let { it1 -> countriesParser(it1) }}, ${it.year.toString()}"
+                            genre.text = res.genres?.let { it1 -> genresParser(it1) }
+                            overviewFull.text = res.overview
+                            budget.text = String.format("Бюджет: %d $", res.budget)
+                            rating.text = String.format("Рейтинг: %.1f", res.vote_average)
+                        }
                     }
                 }
-            }
-        })
+            }, it.id)
+        }
 
         return binding.root
     }
 
-    private fun genresParser(genreIds: List<Int>): String {
+    private fun genresParser(genres: List<GenreDTO>): String {
         val genresString = mutableListOf<String>()
-        for (genreID in genreIds) {
-            for (genre in genres)
-                if (genre.id == genreID) {
-                    genre.name?.let { genresString.add(it) }
-                }
+        for (genre in genres) {
+            genre.name?.let { genresString.add(it) }
         }
-        return genresString.toString()
+        return genresString
+            .toString()
+            .replace("[", "", true)
+            .replace("]", "", true)
+    }
+
+    private fun countriesParser(countries: List<CountryDTO>): String {
+        val countriesString = mutableListOf<String>()
+        for (country in countries) {
+            country.name?.let { countriesString.add(it) }
+        }
+        return countriesString
+            .toString()
+            .replace("[", "", true)
+            .replace("]", "", true)
     }
 
     companion object {
