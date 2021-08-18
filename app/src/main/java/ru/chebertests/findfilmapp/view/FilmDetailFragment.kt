@@ -6,7 +6,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.RequiresApi
-import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import com.bumptech.glide.Glide
 import ru.chebertests.findfilmapp.databinding.FilmDetailFragmentBinding
@@ -15,9 +14,7 @@ import ru.chebertests.findfilmapp.model.Film
 import ru.chebertests.findfilmapp.model.dto.CountryDTO
 import ru.chebertests.findfilmapp.model.dto.FilmDetailDTO
 import ru.chebertests.findfilmapp.model.dto.GenreDTO
-import ru.chebertests.findfilmapp.model.repository.CountryLoader
 import ru.chebertests.findfilmapp.model.repository.FilmRemoteRepository
-import ru.chebertests.findfilmapp.model.repository.GenresRepository
 
 class FilmDetailFragment : Fragment() {
 

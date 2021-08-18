@@ -31,10 +31,12 @@ class FilmRemoteRepository : IFilmRepository {
         try {
             Thread(Runnable {
 
-                val urlBase : String = "https://api.themoviedb.org/3/discover/movie" +
-                "?api_key=$API_KEY" +
-                "&language=$LANG"
-                var urlGenre : String = ""
+                val urlBase: String = "https://api.themoviedb.org/3/discover/movie" +
+                        "?api_key=$API_KEY" +
+                        // "&primary_release_year=2010" +
+                        // "&sort_by=popularity.desc" +
+                        "&language=$LANG"
+                var urlGenre: String = ""
                 if (genreID != null) {
                     urlGenre = "&with_genres=${genreID.toString()}"
                 }
@@ -76,7 +78,7 @@ class FilmRemoteRepository : IFilmRepository {
         try {
             Thread(Runnable {
 
-                val url : String = "https://api.themoviedb.org/3/movie/$filmID" +
+                val url: String = "https://api.themoviedb.org/3/movie/$filmID" +
                         "?api_key=$API_KEY" +
                         "&language=$LANG"
 

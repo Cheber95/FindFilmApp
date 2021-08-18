@@ -1,7 +1,6 @@
 package ru.chebertests.findfilmapp.model.repository
 
 import ru.chebertests.findfilmapp.model.Callback
-import ru.chebertests.findfilmapp.model.Film
 import ru.chebertests.findfilmapp.model.dto.GenreDTO
 
 interface IGenresRepository {

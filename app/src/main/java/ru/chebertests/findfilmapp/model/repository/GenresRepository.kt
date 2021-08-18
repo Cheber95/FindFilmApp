@@ -8,7 +8,6 @@ import androidx.annotation.RequiresApi
 import com.google.gson.Gson
 import ru.chebertests.findfilmapp.BuildConfig
 import ru.chebertests.findfilmapp.model.Callback
-import ru.chebertests.findfilmapp.model.dto.FilmsDTO
 import ru.chebertests.findfilmapp.model.dto.GenreDTO
 import ru.chebertests.findfilmapp.model.dto.GenresDTO
 import java.io.BufferedReader
