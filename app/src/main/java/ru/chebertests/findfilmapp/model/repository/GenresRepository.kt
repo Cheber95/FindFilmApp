@@ -23,41 +23,37 @@ private const val LANG = "ru-RU"
 
 class GenresRepository : IGenresRepository {
 
-    private lateinit var genresRepository : List<GenreDTO>
+    private lateinit var genresRepository: List<GenreDTO>
 
     @RequiresApi(Build.VERSION_CODES.N)
     override fun getGenres(callback: Callback<List<GenreDTO>>) {
-        val handler = Handler(Looper.getMainLooper())
         try {
-            Thread(Runnable {
-                val uriGenres =
-                    URL("https://api.themoviedb.org/3/genre/movie/list?api_key=$API_KEY&language=$LANG")
+            val uriGenres =
+                URL("https://api.themoviedb.org/3/genre/movie/list?api_key=$API_KEY&language=$LANG")
 
-                lateinit var urlConnection: HttpsURLConnection
-                try {
-                    urlConnection = uriGenres.openConnection() as HttpsURLConnection
-                    urlConnection.requestMethod = "GET"
-                    urlConnection.readTimeout = 10000
-                    val bufferedReaderGenres =
-                        BufferedReader(InputStreamReader(urlConnection.inputStream))
-                    val genresDTO = Gson().fromJson<GenresDTO>(
-                        getLines(bufferedReaderGenres),
-                        GenresDTO::class.java
-                    )
-                    urlConnection.disconnect()
+            lateinit var urlConnection: HttpsURLConnection
+            try {
+                urlConnection = uriGenres.openConnection() as HttpsURLConnection
+                urlConnection.requestMethod = "GET"
+                urlConnection.readTimeout = 10000
+                val bufferedReaderGenres =
+                    BufferedReader(InputStreamReader(urlConnection.inputStream))
+                val genresDTO = Gson().fromJson<GenresDTO>(
+                    getLines(bufferedReaderGenres),
+                    GenresDTO::class.java
+                )
+                urlConnection.disconnect()
 
-                    genresRepository = genresDTO.genres!!
-                    handler.post(Runnable {
-                        callback.onSuccess(genresRepository)
-                    })
+                genresRepository = genresDTO.genres!!
 
-                } catch (e: Exception) {
-                    Log.e("", "Fail connection", e)
-                    e.printStackTrace()
-                } finally {
-                    urlConnection.disconnect()
-                }
-            }).start()
+                callback.onSuccess(genresRepository)
+
+            } catch (e: Exception) {
+                Log.e("", "Fail connection", e)
+                e.printStackTrace()
+            } finally {
+                urlConnection.disconnect()
+            }
         } catch (e: MalformedURLException) {
             Log.e("", "Fail URI", e)
             e.printStackTrace()

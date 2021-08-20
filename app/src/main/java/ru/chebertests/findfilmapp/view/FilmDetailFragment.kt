@@ -2,6 +2,8 @@ package ru.chebertests.findfilmapp.view
 
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -31,25 +33,30 @@ class FilmDetailFragment : Fragment() {
         _binding = FilmDetailFragmentBinding.inflate(inflater, container, false)
         val currentFilm = arguments?.getParcelable<Film>(BUNDLE_EXTRA)
         currentFilm?.let {
-            filmRepository.getFilm(callback = object : Callback<FilmDetailDTO> {
-                override fun onSuccess(result: FilmDetailDTO) {
-                    binding.apply {
-                        result.let { res ->
-                            filmNameFull.text = res.title
-                            Glide
-                                .with(root)
-                                .load(currentFilm.posterPath)
-                                .into(posterFull)
-                            countryAndYearFilmFull.text =
-                                "${res.production_countries?.let { it1 -> countriesParser(it1) }}, ${it.year.toString()}"
-                            genre.text = res.genres?.let { it1 -> genresParser(it1) }
-                            overviewFull.text = res.overview
-                            budget.text = String.format("Бюджет: %d $", res.budget)
-                            rating.text = String.format("Рейтинг: %.1f", res.vote_average)
-                        }
+            val handler = Handler(Looper.getMainLooper())
+            Thread {
+                filmRepository.getFilm(callback = object : Callback<FilmDetailDTO> {
+                    override fun onSuccess(result: FilmDetailDTO) {
+                        handler.post(Runnable {
+                            binding.apply {
+                                result.let { res ->
+                                    filmNameFull.text = res.title
+                                    Glide
+                                        .with(root)
+                                        .load(currentFilm.posterPath)
+                                        .into(posterFull)
+                                    countryAndYearFilmFull.text =
+                                        "${res.production_countries?.let { it1 -> countriesParser(it1) }}, ${it.year.toString()}"
+                                    genre.text = res.genres?.let { it1 -> genresParser(it1) }
+                                    overviewFull.text = res.overview
+                                    budget.text = String.format("Бюджет: %d $", res.budget)
+                                    rating.text = String.format("Рейтинг: %.1f", res.vote_average)
+                                }
+                            }
+                        })
                     }
-                }
-            }, it.id)
+                }, it.id)
+            }.start()
         }
 
         return binding.root
