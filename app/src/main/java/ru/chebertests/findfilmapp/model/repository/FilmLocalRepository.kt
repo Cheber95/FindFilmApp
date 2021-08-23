@@ -55,8 +55,4 @@ class FilmLocalRepository : IFilmRepository {
         )
     }
 
-    override fun getFilm(callback: Callback<FilmDetailDTO>, filmID: Int) {
-        TODO("Not yet implemented")
-    }
-
 }

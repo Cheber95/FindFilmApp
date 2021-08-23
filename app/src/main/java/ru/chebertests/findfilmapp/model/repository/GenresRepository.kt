@@ -23,46 +23,16 @@ private const val LANG = "ru-RU"
 
 class GenresRepository : IGenresRepository {
 
-    private lateinit var genresRepository: List<GenreDTO>
+    private var genresRepository: MutableList<GenreDTO> = mutableListOf()
 
-    @RequiresApi(Build.VERSION_CODES.N)
-    override fun getGenres(callback: Callback<List<GenreDTO>>) {
-        try {
-            val uriGenres =
-                URL("https://api.themoviedb.org/3/genre/movie/list?api_key=$API_KEY&language=$LANG")
-
-            lateinit var urlConnection: HttpsURLConnection
-            try {
-                urlConnection = uriGenres.openConnection() as HttpsURLConnection
-                urlConnection.requestMethod = "GET"
-                urlConnection.readTimeout = 10000
-                val bufferedReaderGenres =
-                    BufferedReader(InputStreamReader(urlConnection.inputStream))
-                val genresDTO = Gson().fromJson<GenresDTO>(
-                    getLines(bufferedReaderGenres),
-                    GenresDTO::class.java
-                )
-                urlConnection.disconnect()
-
-                genresRepository = genresDTO.genres!!
-
-                callback.onSuccess(genresRepository)
-
-            } catch (e: Exception) {
-                Log.e("", "Fail connection", e)
-                e.printStackTrace()
-            } finally {
-                urlConnection.disconnect()
-            }
-        } catch (e: MalformedURLException) {
-            Log.e("", "Fail URI", e)
-            e.printStackTrace()
-        }
+    fun setGenres(genresToSet: List<GenreDTO>) {
+        genresRepository.clear()
+        genresRepository.addAll(genresToSet)
     }
 
     @RequiresApi(Build.VERSION_CODES.N)
-    private fun loadData() {
-
+    override fun getGenres(callback: Callback<List<GenreDTO>>) {
+        callback.onSuccess(genresRepository)
     }
 
     @RequiresApi(Build.VERSION_CODES.N)
