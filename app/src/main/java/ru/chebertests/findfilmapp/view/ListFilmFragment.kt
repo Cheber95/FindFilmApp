@@ -11,7 +11,6 @@ import android.os.Looper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
@@ -48,6 +47,7 @@ class ListFilmFragment : Fragment() {
 
     private val loadResultsReceiver: BroadcastReceiver = object : BroadcastReceiver() {
 
+        @RequiresApi(Build.VERSION_CODES.N)
         override fun onReceive(context: Context?, intent: Intent?) {
             when (intent?.getStringExtra(LOAD_RESULT_EXTRA)) {
                 LOAD_INTENT_EMPTY_EXTRA -> TODO(PROCESS_ERROR)
@@ -57,11 +57,52 @@ class ListFilmFragment : Fragment() {
                 GENRES_LOAD_SUCCESS_EXTRA -> {
 
                     @Suppress("UNCHECKED_CAST")
-                    genresRepository.setGenres(
-                        intent
-                            .getParcelableArrayExtra(GENRES_LOAD_SUCCESS_EXTRA)
-                            ?.toList() as List<GenreDTO>)
-                    //Toast.makeText(context,"ХУЙ",Toast.LENGTH_LONG).show()
+                    val genres: List<GenreDTO> = intent
+                        .getParcelableArrayExtra(GENRES_LOAD_SUCCESS_EXTRA)
+                        ?.toList() as List<GenreDTO>
+
+                    genresRepository.setGenres(genres)
+
+                    val byGenreAdapter = FilmListAdapter()
+                    for (genre in genres) {
+                        val remoteRepositoryByGenre = FilmRemoteRepository()
+                        with(byGenreAdapter) {
+                            remoteRepositoryByGenre.getData(callback = object :
+                                Callback<List<Film>> {
+                                override fun onSuccess(resultListFilm: List<Film>) {
+                                    setFilmData(resultListFilm)
+                                    val subtitle = createGenreSubtitle(genre)
+                                    binding.listsContainer.addView(subtitle)
+                                    setFilmListener(object : OnFilmClickListener {
+                                        override fun onFilmClick(film: Film) {
+                                            val manager = parentFragmentManager
+                                            val bundle = Bundle()
+                                            bundle.putParcelable(
+                                                FilmDetailFragment.BUNDLE_EXTRA,
+                                                film
+                                            )
+                                            manager
+                                                .beginTransaction()
+                                                .replace(
+                                                    R.id.container_general,
+                                                    FilmDetailFragment.newInstance(bundle)
+                                                )
+                                                .addToBackStack(FilmDetailFragment.BUNDLE_EXTRA)
+                                                .commit()
+                                        }
+                                    })
+                                    binding.listsContainer.addView(RecyclerView(binding.listsContainer.context).apply {
+                                        adapter = byGenreAdapter
+                                        layoutManager = LinearLayoutManager(
+                                            context,
+                                            LinearLayoutManager.HORIZONTAL,
+                                            false
+                                        )
+                                    })
+                                }
+                            }, genre.id)
+                        }
+                    }
                 }
             }
         }
@@ -91,6 +132,9 @@ class ListFilmFragment : Fragment() {
         val handler = Handler(Looper.getMainLooper())
 
         context?.let {
+            it.startService(Intent(it, LoadFilmService::class.java).apply {
+              putExtra(COMMAND, TO_LOAD_LIST_OF_FILMS)
+            })
             it.startService(Intent(it, LoadFilmService::class.java).apply {
                 putExtra(COMMAND, TO_LOAD_GENRES)
             })
@@ -128,59 +172,6 @@ class ListFilmFragment : Fragment() {
                         })
                     }
                 }, null)
-                genresRepository.getGenres(callback = object : Callback<List<GenreDTO>> {
-                    override fun onSuccess(resultGenres: List<GenreDTO>) {
-                        for (genre in resultGenres) {
-                            val remoteRepositoryByGenre = FilmRemoteRepository()
-                            val byGenreAdapter = FilmListAdapter()
-                            with(byGenreAdapter) {
-                                remoteRepositoryByGenre.getData(callback = object :
-                                    Callback<List<Film>> {
-                                    override fun onSuccess(resultListFilm: List<Film>) {
-                                        handler.post(Runnable {
-                                            setFilmData(resultListFilm)
-                                            val subtitle =
-                                                MaterialTextView(binding.listsContainer.context).apply {
-                                                    text =
-                                                        genre.name?.replaceFirstChar { it.uppercase() }
-                                                    layoutParams =
-                                                        binding.listsContainer.layoutParams
-                                                    setTextAppearance(R.style.TextAppearance_MaterialComponents_Headline5)
-                                                }
-                                            binding.listsContainer.addView(subtitle)
-                                            setFilmListener(object : OnFilmClickListener {
-                                                override fun onFilmClick(film: Film) {
-                                                    val manager = parentFragmentManager
-                                                    val bundle = Bundle()
-                                                    bundle.putParcelable(
-                                                        FilmDetailFragment.BUNDLE_EXTRA,
-                                                        film
-                                                    )
-                                                    manager
-                                                        .beginTransaction()
-                                                        .replace(
-                                                            R.id.container_general,
-                                                            FilmDetailFragment.newInstance(bundle)
-                                                        )
-                                                        .addToBackStack(FilmDetailFragment.BUNDLE_EXTRA)
-                                                        .commit()
-                                                }
-                                            })
-                                            binding.listsContainer.addView(RecyclerView(binding.listsContainer.context).apply {
-                                                adapter = byGenreAdapter
-                                                layoutManager = LinearLayoutManager(
-                                                    context,
-                                                    LinearLayoutManager.HORIZONTAL,
-                                                    false
-                                                )
-                                            })
-                                        })
-                                    }
-                                }, genre.id)
-                            }
-                        }
-                    }
-                })
             }.start()
         }
 
@@ -200,6 +191,15 @@ class ListFilmFragment : Fragment() {
         }
         super.onDestroy()
     }
+
+    fun createGenreSubtitle(genre: GenreDTO) =
+        MaterialTextView(binding.listsContainer.context).apply {
+            text =
+                genre.name?.replaceFirstChar { it.uppercase() }
+            layoutParams =
+                binding.listsContainer.layoutParams
+            setTextAppearance(R.style.TextAppearance_MaterialComponents_Headline5)
+        }
 
     companion object {
         fun newInstance() = ListFilmFragment()
