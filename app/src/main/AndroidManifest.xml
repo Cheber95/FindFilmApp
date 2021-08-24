@@ -20,6 +20,7 @@
         </activity>
 
         <service android:name=".model.services.LoadFilmService"/>
+        <service android:name=".model.services.LoadListService"/>
     </application>
 
 </manifest>
