@@ -1,5 +1,7 @@
 package ru.chebertests.findfilmapp.viewmodel
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.google.gson.Gson
@@ -12,6 +14,7 @@ import ru.chebertests.findfilmapp.model.dto.FilmsDTO
 import ru.chebertests.findfilmapp.model.remoteDataSources.RemoteFilmsSource
 import ru.chebertests.findfilmapp.model.repository.FilmRemoteRepository
 import java.io.IOException
+import java.time.LocalDate
 
 private const val SERVER_ERROR = "Ошибка загрузки данных"
 
@@ -31,8 +34,7 @@ class FilmsViewModel(
     private val callback = object : Callback {
 
         override fun onResponse(call: Call, response: Response) {
-            //val serverResponse: String? = response.message()
-            val serverResponse: String? = response.body()?.toString()
+            val serverResponse: String? = response.body()?.string()
             filmsLiveData.postValue(
                 if (response.isSuccessful && serverResponse != null) {
                     chekResponse(serverResponse)
@@ -69,7 +71,7 @@ class FilmsViewModel(
                         title!!,
                         "https://image.tmdb.org/t/p/original/${poster_path!!}",
                         vote_average!!,
-                        release_date!!.toInt()
+                        LocalDate.parse(release_date).year
                     )
                 )
             }

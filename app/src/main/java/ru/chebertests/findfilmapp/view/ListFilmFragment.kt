@@ -10,6 +10,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
+import ru.chebertests.findfilmapp.R
 import ru.chebertests.findfilmapp.databinding.FilmListFragmentBinding
 import ru.chebertests.findfilmapp.extensions.AppState
 import ru.chebertests.findfilmapp.model.Film
@@ -17,7 +18,7 @@ import ru.chebertests.findfilmapp.viewmodel.FilmListAdapter
 import ru.chebertests.findfilmapp.viewmodel.FilmsViewModel
 import ru.chebertests.findfilmapp.viewmodel.MainViewModel
 
-private const val BASE_LINK = "https://api.themoviedb.org/3/discover/movie?api_key=85a6977294202ae5da2d96ff6d2ed326&language=ru-RU&sort_by=vote_average.desc"
+private const val BASE_LINK = "https://api.themoviedb.org/3/discover/movie?api_key=85a6977294202ae5da2d96ff6d2ed326&language=ru-RU&sort_by=vote_count.desc&include_adult=true&include_video=false&page=1&with_watch_monetization_types=flatrate"
 
 class ListFilmFragment : Fragment() {
 
@@ -58,9 +59,22 @@ class ListFilmFragment : Fragment() {
         when(state) {
             is AppState.Success -> {
                 adapter.setFilmData(state.listFilms)
+                adapter.setFilmListener(object : OnFilmClickListener {
+                    override fun onFilmClick(film: Film) {
+                        val manager = parentFragmentManager
+                        val bundle = Bundle()
+                        bundle.putParcelable(FilmDetailFragment.BUNDLE_EXTRA, film)
+                        manager
+                            .beginTransaction()
+                            .replace(R.id.container_general, FilmDetailFragment.newInstance(bundle))
+                            .addToBackStack(FilmDetailFragment.BUNDLE_EXTRA)
+                            .commit()
+                    }
+                })
                 binding.listOfFilms.adapter = adapter
                 binding.listOfFilms.layoutManager =
                     LinearLayoutManager(context,LinearLayoutManager.HORIZONTAL,false)
+
             }
             is AppState.Loading -> {
                 //TODO("Повесить прогрессбар")
