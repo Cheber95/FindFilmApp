@@ -1,20 +1,28 @@
 package ru.chebertests.findfilmapp.model.remoteDataSources
 
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.Callback
+import com.google.gson.GsonBuilder
+import retrofit2.Callback
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 import ru.chebertests.findfilmapp.BuildConfig
+import ru.chebertests.findfilmapp.model.dto.FilmsDTO
+import ru.chebertests.findfilmapp.model.repository.ListOfFilmsAPI
 
-private const val API_KEY = "api_key"
+private const val LANG_RUS = "ru-RU"
+private const val BASE_URL = "https://api.themoviedb.org/3/"
 
 class RemoteFilmsSource {
-    fun getFilmsList(requestLink: String, callback: Callback) {
-        val builder: Request.Builder = Request.Builder().apply {
-            header(API_KEY, BuildConfig.TMDB_API_KEY)
-            url(requestLink)
-        }
-        val request = builder.build()
-        val call = OkHttpClient().newCall(request)
-        call.enqueue(callback)
+
+    private val listOfFilmsAPI = Retrofit.Builder()
+        .baseUrl(BASE_URL)
+        .addConverterFactory(
+            GsonConverterFactory.create(
+                GsonBuilder().setLenient().create()
+            )
+        )
+        .build().create(ListOfFilmsAPI::class.java)
+
+    fun getFilmsList(callback: Callback<FilmsDTO>) {
+        listOfFilmsAPI.getFilms(BuildConfig.TMDB_API_KEY, LANG_RUS).enqueue(callback)
     }
 }

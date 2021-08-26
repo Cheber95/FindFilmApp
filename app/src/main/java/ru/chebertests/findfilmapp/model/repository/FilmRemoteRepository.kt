@@ -25,9 +25,8 @@ private const val LANG = "ru-RU"
 
 class FilmRemoteRepository(private val remoteFilmsSource: RemoteFilmsSource) : IFilmRepository {
 
-    override fun getData(requestLink: String, callback: okhttp3.Callback) {
-        remoteFilmsSource.getFilmsList(requestLink, callback)
+    override fun getData(callback: retrofit2.Callback<FilmsDTO>) {
+        remoteFilmsSource.getFilmsList(callback)
     }
-
 
 }

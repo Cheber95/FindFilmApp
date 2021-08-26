@@ -1,13 +1,11 @@
 package ru.chebertests.findfilmapp.viewmodel
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.google.gson.Gson
-import okhttp3.Call
-import okhttp3.Callback
-import okhttp3.Response
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 import ru.chebertests.findfilmapp.extensions.AppState
 import ru.chebertests.findfilmapp.model.Film
 import ru.chebertests.findfilmapp.model.dto.FilmsDTO
@@ -26,15 +24,20 @@ class FilmsViewModel(
 
     fun getLiveData() = filmsLiveData
 
-    fun getListFilmFromRemote(requestLink: String) {
+    fun getListFilmFromRemote() {
         filmsLiveData.value = AppState.Loading
-        filmRemoteRepository.getData(requestLink, callback)
+        filmRemoteRepository.getData(callback)
     }
 
-    private val callback = object : Callback {
+    private val callback = object : Callback<FilmsDTO> {
 
-        override fun onResponse(call: Call, response: Response) {
-            val serverResponse: String? = response.body()?.string()
+
+        override fun onFailure(call: Call<FilmsDTO>, t: Throwable) {
+            filmsLiveData.postValue(AppState.Error(Throwable(SERVER_ERROR)))
+        }
+
+        override fun onResponse(call: Call<FilmsDTO>, response: Response<FilmsDTO>) {
+            val serverResponse: FilmsDTO? = response.body()
             filmsLiveData.postValue(
                 if (response.isSuccessful && serverResponse != null) {
                     chekResponse(serverResponse)
@@ -44,22 +47,14 @@ class FilmsViewModel(
             )
         }
 
-        override fun onFailure(call: Call, e: IOException) {
-            filmsLiveData.postValue(AppState.Error(Throwable(SERVER_ERROR)))
-        }
-
     }
 
-    private fun chekResponse(serverResponse: String): AppState {
-        val filmsDTO: FilmsDTO =
-            Gson().fromJson(serverResponse, FilmsDTO::class.java)
-
-        return if (filmsDTO.results != null) {
-            AppState.Success(convertFilmsFromDTO(filmsDTO))
+    private fun chekResponse(serverResponse: FilmsDTO): AppState =
+        if (serverResponse.results != null) {
+            AppState.Success(convertFilmsFromDTO(serverResponse))
         } else {
             AppState.Error(Throwable(SERVER_ERROR))
         }
-    }
 
     private fun convertFilmsFromDTO(filmsDTO: FilmsDTO): List<Film> {
         val listFilms = mutableListOf<Film>()

@@ -50,7 +50,7 @@ class ListFilmFragment : Fragment() {
         viewModel.getLiveData().observe(viewLifecycleOwner, Observer {
             renderList(it)
         })
-        viewModel.getListFilmFromRemote(BASE_LINK)
+        viewModel.getListFilmFromRemote()
 
         return binding.root
     }
