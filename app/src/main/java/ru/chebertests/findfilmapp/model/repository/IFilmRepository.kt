@@ -4,5 +4,5 @@ import retrofit2.Callback
 import ru.chebertests.findfilmapp.model.dto.FilmsDTO
 
 interface IFilmRepository {
-    fun getData(callback: Callback<FilmsDTO>)
+    fun getData(genres: String?, callback: Callback<FilmsDTO>)
 }

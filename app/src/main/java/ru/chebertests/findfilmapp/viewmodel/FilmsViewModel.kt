@@ -24,9 +24,9 @@ class FilmsViewModel(
 
     fun getLiveData() = filmsLiveData
 
-    fun getListFilmFromRemote() {
+    fun getListFilmFromRemote(genres: String?) {
         filmsLiveData.value = AppState.Loading
-        filmRemoteRepository.getData(callback)
+        filmRemoteRepository.getData(genres, callback)
     }
 
     private val callback = object : Callback<FilmsDTO> {

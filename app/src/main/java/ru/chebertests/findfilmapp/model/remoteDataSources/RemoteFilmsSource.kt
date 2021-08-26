@@ -22,7 +22,7 @@ class RemoteFilmsSource {
         )
         .build().create(ListOfFilmsAPI::class.java)
 
-    fun getFilmsList(callback: Callback<FilmsDTO>) {
-        listOfFilmsAPI.getFilms(BuildConfig.TMDB_API_KEY, LANG_RUS).enqueue(callback)
+    fun getFilmsList(genres: String?, callback: Callback<FilmsDTO>) {
+        listOfFilmsAPI.getFilms(BuildConfig.TMDB_API_KEY, LANG_RUS, genres).enqueue(callback)
     }
 }
