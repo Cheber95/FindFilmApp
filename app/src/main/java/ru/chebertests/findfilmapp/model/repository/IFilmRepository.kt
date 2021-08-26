@@ -1,10 +1,8 @@
 package ru.chebertests.findfilmapp.model.repository
 
-import ru.chebertests.findfilmapp.model.Callback
-import ru.chebertests.findfilmapp.model.Film
-import ru.chebertests.findfilmapp.model.dto.FilmDetailDTO
+import okhttp3.Callback
+import ru.chebertests.findfilmapp.model.dto.FilmsDTO
 
 interface IFilmRepository {
-    fun setData(dataToSet: List<Film>)
-    fun getData() : List<Film>
+    fun getData(requestLink: String, callback: Callback)
 }

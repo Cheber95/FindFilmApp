@@ -17,21 +17,17 @@ import java.net.URL
 import java.util.stream.Collectors
 import javax.net.ssl.HttpsURLConnection
 import ru.chebertests.findfilmapp.model.Callback
+import ru.chebertests.findfilmapp.model.remoteDataSources.RemoteFilmsSource
 
 private const val API_KEY = BuildConfig.TMDB_API_KEY
 private const val MAX_PAGES_OF_FILMS = 2
 private const val LANG = "ru-RU"
 
-class FilmRemoteRepository : IFilmRepository {
+class FilmRemoteRepository(private val remoteFilmsSource: RemoteFilmsSource) : IFilmRepository {
 
-    private val filmRepository: MutableList<Film> = mutableListOf()
-
-    override fun setData(dataToSet: List<Film>) {
-        filmRepository.clear()
-        filmRepository.addAll(dataToSet)
+    override fun getData(requestLink: String, callback: okhttp3.Callback) {
+        remoteFilmsSource.getFilmsList(requestLink, callback)
     }
 
-    override fun getData(): List<Film> {
-        return filmRepository
-    }
+
 }

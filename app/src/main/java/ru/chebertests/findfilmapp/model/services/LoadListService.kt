@@ -111,7 +111,7 @@ class LoadListService(name: String = "loadListService") : IntentService(name) {
 
     private fun filmsParser(filmsFromAPI: FilmsDTO) {
 
-        for (filmToListDTO: FilmToListDTO in filmsFromAPI.results) {
+        for (filmToListDTO: FilmToListDTO in filmsFromAPI.results!!) {
 
             val currentFilm = Film(
                 filmToListDTO.id!!,
