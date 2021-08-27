@@ -18,8 +18,6 @@ import ru.chebertests.findfilmapp.viewmodel.FilmListAdapter
 import ru.chebertests.findfilmapp.viewmodel.FilmsViewModel
 import ru.chebertests.findfilmapp.viewmodel.MainViewModel
 
-private const val BASE_LINK = "https://api.themoviedb.org/3/discover/movie?api_key=85a6977294202ae5da2d96ff6d2ed326&language=ru-RU&sort_by=vote_count.desc&include_adult=true&include_video=false&page=1&with_watch_monetization_types=flatrate"
-
 class ListFilmFragment : Fragment() {
 
     private var mViewModel: MainViewModel? = null
@@ -89,10 +87,6 @@ class ListFilmFragment : Fragment() {
         super.onDestroyView()
         _binding = null
         adapter::removeListener
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
     }
 
     companion object {

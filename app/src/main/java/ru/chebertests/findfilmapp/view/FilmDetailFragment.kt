@@ -1,23 +1,24 @@
 package ru.chebertests.findfilmapp.view
 
 import android.annotation.SuppressLint
-import android.content.BroadcastReceiver
-import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.annotation.RequiresApi
 import androidx.fragment.app.Fragment
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
+import ru.chebertests.findfilmapp.R
 import ru.chebertests.findfilmapp.databinding.FilmDetailFragmentBinding
+import ru.chebertests.findfilmapp.extensions.AppState
 import ru.chebertests.findfilmapp.model.Film
-import ru.chebertests.findfilmapp.model.dto.CountryDTO
-import ru.chebertests.findfilmapp.model.dto.FilmDetailDTO
-import ru.chebertests.findfilmapp.model.dto.GenreDTO
 import ru.chebertests.findfilmapp.model.services.LoadFilmService
+import ru.chebertests.findfilmapp.viewmodel.FilmsViewModel
+import java.time.format.DateTimeFormatter
 
 const val LOAD_INTENT_FILTER = "LOAD INTENT FILTER"
 const val FILM_ID = "Film ID"
@@ -30,8 +31,6 @@ private const val LOAD_URL_MALFORMED_EXTRA = "URL MALFORMED"
 
 const val COMMAND = "COMMAND"
 const val TO_LOAD_FILM = "TO LOAD FILM"
-const val TO_LOAD_GENRES = "TO LOAD GENRES"
-const val TO_LOAD_LIST_OF_FILMS = "TO LOAD LIST OF FILMS"
 
 private const val PROCESS_ERROR = "Обработка ошибки"
 
@@ -40,31 +39,8 @@ class FilmDetailFragment : Fragment() {
     private var _binding: FilmDetailFragmentBinding? = null
     private val binding get() = _binding!!
 
-    private val loadResultsReceiver: BroadcastReceiver = object : BroadcastReceiver() {
-
-        override fun onReceive(context: Context?, intent: Intent?) {
-            when (intent?.getStringExtra(LOAD_RESULT_EXTRA)) {
-                LOAD_INTENT_EMPTY_EXTRA -> TODO(PROCESS_ERROR)
-                LOAD_DATA_EMPTY_EXTRA -> TODO(PROCESS_ERROR)
-                LOAD_REQUEST_ERROR_EXTRA -> TODO(PROCESS_ERROR)
-                LOAD_URL_MALFORMED_EXTRA -> TODO(PROCESS_ERROR)
-                FILM_LOAD_SUCCESS_EXTRA -> {
-                    intent.getParcelableExtra<FilmDetailDTO>(FILM_LOAD_SUCCESS_EXTRA)?.let {
-                        renderFilm(
-                            it
-                        )
-                    }
-                }
-            }
-        }
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        context?.let {
-            LocalBroadcastManager.getInstance(it)
-                .registerReceiver(loadResultsReceiver, IntentFilter(LOAD_INTENT_FILTER))
-        }
+    private val viewModel: FilmsViewModel by lazy {
+        ViewModelProvider(this).get(FilmsViewModel::class.java)
     }
 
     override fun onCreateView(
@@ -72,77 +48,49 @@ class FilmDetailFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
 
-        context?.let {
-            it.startService(Intent(it, LoadFilmService::class.java).apply {
-                putExtra(COMMAND, TO_LOAD_FILM)
-                putExtra(FILM_ID, arguments?.getParcelable<Film>(BUNDLE_EXTRA)?.id)
-            })
-        }
-
         _binding = FilmDetailFragmentBinding.inflate(inflater, container, false)
+
+        viewModel.getLiveData().observe(viewLifecycleOwner, Observer {
+            renderFilm(it)
+        })
+        arguments?.getParcelable<Film>(BUNDLE_EXTRA)?.let { viewModel.getFilmDetailFromRemote(it) }
 
         return binding.root
     }
 
-    override fun onDestroy() {
-        context?.let {
-            LocalBroadcastManager.getInstance(it)
-                .unregisterReceiver(loadResultsReceiver)
+    @SuppressLint("SetTextI18n")
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun renderFilm(state: AppState?) {
+        when (state) {
+            is AppState.SuccessOnFilm -> {
+                val film = state.filmDetail
+                val dateFormatter = DateTimeFormatter.ofPattern("d LLLL yyyy")
+                binding.apply {
+                    filmNameFull.text = film.name
+                    Glide
+                        .with(root)
+                        .load(film.posterPath)
+                        .into(posterFull)
+                    countryFilmFull.text = film.countries
+                    dateFilmFull.text = "Премьера: ${film.releaseDate.format(dateFormatter)}"
+                    genre.text = film.genres
+                    overviewFull.text = film.overview
+                    budget.text = String.format("Бюджет: %d $", film.budget)
+                    rating.text = String.format("Рейтинг: %.1f", film.voteAverage)
+                }
+            }
+            is AppState.Loading -> {
+                //TODO("Повесить прогрессбар")
+            }
+            is AppState.Error -> {
+                TODO("Обработать ошибку")
+            }
         }
-        super.onDestroy()
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
-    }
-
-    @SuppressLint("SetTextI18n")
-    private fun renderFilm(filmDetailDTO: FilmDetailDTO) {
-        val currentFilm = arguments?.getParcelable<Film>(BUNDLE_EXTRA)
-        binding.apply {
-            filmDetailDTO.let { fDTO ->
-                filmNameFull.text = fDTO.title
-                Glide
-                    .with(root)
-                    .load(currentFilm?.posterPath)
-                    .into(posterFull)
-                countryAndYearFilmFull.text =
-                    "${
-                        fDTO.production_countries?.let { it1 ->
-                            countriesParser(
-                                it1
-                            )
-                        }
-                    }, ${currentFilm?.year.toString()}"
-                genre.text = fDTO.genres?.let { it1 -> genresParser(it1) }
-                overviewFull.text = fDTO.overview
-                budget.text = String.format("Бюджет: %d $", fDTO.budget)
-                rating.text = String.format("Рейтинг: %.1f", fDTO.vote_average)
-            }
-        }
-    }
-
-    private fun genresParser(genres: List<GenreDTO>): String {
-        val genresString = mutableListOf<String>()
-        for (genre in genres) {
-            genre.name?.let { genresString.add(it) }
-        }
-        return genresString
-            .toString()
-            .replace("[", "", true)
-            .replace("]", "", true)
-    }
-
-    private fun countriesParser(countries: List<CountryDTO>): String {
-        val countriesString = mutableListOf<String>()
-        for (country in countries) {
-            country.name?.let { countriesString.add(it) }
-        }
-        return countriesString
-            .toString()
-            .replace("[", "", true)
-            .replace("]", "", true)
     }
 
     companion object {
