@@ -10,27 +10,13 @@ import androidx.annotation.RequiresApi
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
 import ru.chebertests.findfilmapp.R
 import ru.chebertests.findfilmapp.databinding.FilmDetailFragmentBinding
 import ru.chebertests.findfilmapp.extensions.AppState
 import ru.chebertests.findfilmapp.model.Film
-import ru.chebertests.findfilmapp.model.services.LoadFilmService
 import ru.chebertests.findfilmapp.viewmodel.FilmsViewModel
 import java.time.format.DateTimeFormatter
-
-const val LOAD_INTENT_FILTER = "LOAD INTENT FILTER"
-const val FILM_ID = "Film ID"
-const val FILM_LOAD_SUCCESS_EXTRA = "FILM LOAD SUCCESS EXTRA"
-private const val LOAD_RESULT_EXTRA = "LOAD RESULT"
-private const val LOAD_INTENT_EMPTY_EXTRA = "INTENT IS EMPTY"
-private const val LOAD_DATA_EMPTY_EXTRA = "DATA IS EMPTY"
-private const val LOAD_REQUEST_ERROR_EXTRA = "REQUEST ERROR"
-private const val LOAD_URL_MALFORMED_EXTRA = "URL MALFORMED"
-
-const val COMMAND = "COMMAND"
-const val TO_LOAD_FILM = "TO LOAD FILM"
 
 private const val PROCESS_ERROR = "Обработка ошибки"
 

@@ -7,6 +7,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 import ru.chebertests.findfilmapp.BuildConfig
 import ru.chebertests.findfilmapp.model.dto.FilmDetailDTO
 import ru.chebertests.findfilmapp.model.dto.FilmsDTO
+import ru.chebertests.findfilmapp.model.dto.GenresDTO
 import ru.chebertests.findfilmapp.model.repository.api.ListOfFilmsAPI
 
 private const val LANG_RUS = "ru-RU"
@@ -28,15 +29,10 @@ class RemoteFilmsSource {
     }
 
     fun getFilmDetail(filmID: Int, callback: Callback<FilmDetailDTO>) {
-        val filmDetailAPI = Retrofit.Builder()
-            .baseUrl(BASE_URL)
-            .addConverterFactory(
-                GsonConverterFactory.create(
-                    GsonBuilder().setLenient().create()
-                )
-            )
-            .build().create(ListOfFilmsAPI::class.java)
+        listOfFilmsAPI.getFilm(filmID, BuildConfig.TMDB_API_KEY, LANG_RUS).enqueue(callback)
+    }
 
-        filmDetailAPI.getFilm(filmID, BuildConfig.TMDB_API_KEY, LANG_RUS).enqueue(callback)
+    fun getGenreList(callback: Callback<GenresDTO>) {
+        listOfFilmsAPI.getGenres(BuildConfig.TMDB_API_KEY, LANG_RUS).enqueue(callback)
     }
 }

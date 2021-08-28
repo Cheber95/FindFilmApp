@@ -14,4 +14,8 @@ class FilmRemoteRepository(private val remoteFilmsSource: RemoteFilmsSource) : I
         remoteFilmsSource.getFilmDetail(filmID, callback)
     }
 
+    override fun getGenres(callback: Callback<GenresDTO>) {
+        remoteFilmsSource.getGenreList(callback)
+    }
+
 }

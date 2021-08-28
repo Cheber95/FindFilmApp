@@ -8,10 +8,7 @@ import retrofit2.Response
 import ru.chebertests.findfilmapp.extensions.AppState
 import ru.chebertests.findfilmapp.model.Film
 import ru.chebertests.findfilmapp.model.FilmDetail
-import ru.chebertests.findfilmapp.model.dto.CountryDTO
-import ru.chebertests.findfilmapp.model.dto.FilmDetailDTO
-import ru.chebertests.findfilmapp.model.dto.FilmsDTO
-import ru.chebertests.findfilmapp.model.dto.GenreDTO
+import ru.chebertests.findfilmapp.model.dto.*
 import ru.chebertests.findfilmapp.model.remoteDataSources.RemoteFilmsSource
 import ru.chebertests.findfilmapp.model.repository.FilmRemoteRepository
 import java.time.LocalDate
@@ -35,6 +32,11 @@ class FilmsViewModel(
     fun getFilmDetailFromRemote(film: Film) {
         filmsLiveData.value = AppState.Loading
         filmRemoteRepository.getFilm(film.id,callbackFilm)
+    }
+
+    fun getGenresListFromRemote() {
+        filmsLiveData.value = AppState.Loading
+        filmRemoteRepository.getGenres(callbackListGenres)
     }
 
     private val callbackList = object : Callback<FilmsDTO> {
@@ -69,7 +71,25 @@ class FilmsViewModel(
         }
 
         override fun onFailure(call: Call<FilmDetailDTO>, t: Throwable) {
-            TODO("Not yet implemented")
+            filmsLiveData.postValue(AppState.Error(Throwable(SERVER_ERROR)))
+        }
+
+    }
+
+    private val callbackListGenres = object : Callback<GenresDTO> {
+        override fun onResponse(call: Call<GenresDTO>, response: Response<GenresDTO>) {
+            val serverResponse: GenresDTO? = response.body()
+            filmsLiveData.postValue(
+                if (response.isSuccessful && serverResponse != null) {
+                    chekResponseGenres(serverResponse)
+                } else {
+                    AppState.Error(Throwable(SERVER_ERROR))
+                }
+            )
+        }
+
+        override fun onFailure(call: Call<GenresDTO>, t: Throwable) {
+            filmsLiveData.postValue(AppState.Error(Throwable(SERVER_ERROR)))
         }
 
     }
@@ -84,6 +104,13 @@ class FilmsViewModel(
     private fun chekResponseFilm(serverResponse: FilmDetailDTO): AppState =
         if (serverResponse.id != null) {
             AppState.SuccessOnFilm(convertFilmDetailFromFilmDetailDTO(serverResponse))
+        } else {
+            AppState.Error(Throwable(SERVER_ERROR))
+        }
+
+    private fun chekResponseGenres(serverResponse: GenresDTO): AppState =
+        if (serverResponse.genres != null) {
+            AppState.SuccessOnGenres(serverResponse.genres)
         } else {
             AppState.Error(Throwable(SERVER_ERROR))
         }
