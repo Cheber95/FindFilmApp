@@ -103,7 +103,7 @@ class FilmsViewModel(
     private fun chekResponseList(serverResponse: FilmsDTO, requestURL: String): AppState =
         if (serverResponse.results != null) {
             if (requestURL.contains("with_genres")){
-                val genreID = requestURL.substringAfter("with_genres=").toInt()
+                val genreID = requestURL.substringAfter("with_genres=").substringBefore("&").toInt()
                 AppState.SuccessOnListByGenre(convertFilmsFromDTO(serverResponse), genreID)
             } else {
                 AppState.SuccessOnList(convertFilmsFromDTO(serverResponse))
@@ -155,12 +155,11 @@ class FilmsViewModel(
 
     @RequiresApi(Build.VERSION_CODES.O)
     private fun convertFilmDetailFromFilmDetailDTO(filmDetailDTO: FilmDetailDTO): FilmDetail {
-        var date = LocalDate.of(0, 1, 1)
-        try {
+        val date = try {
             LocalDate.parse(filmDetailDTO.release_date)
         } catch (e: Exception) {
             Log.e(e.toString(), filmDetailDTO.title + filmDetailDTO.id.toString())
-            date = LocalDate.of(0, 1, 1)
+            LocalDate.of(0, 1, 1)
         }
         return FilmDetail(
             filmDetailDTO.id!!,

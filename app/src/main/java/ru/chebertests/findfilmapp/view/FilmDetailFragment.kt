@@ -80,7 +80,7 @@ class FilmDetailFragment : Fragment() {
                     "Ошибка загрузки данных. Попробуем ещё раз",
                     Toast.LENGTH_SHORT
                 ).show()
-                viewModel.getListFilmFromRemote(null)
+                arguments?.getParcelable<Film>(BUNDLE_EXTRA)?.let { viewModel.getFilmDetailFromRemote(it) }
             }
         }
     }
