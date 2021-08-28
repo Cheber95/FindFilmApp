@@ -5,17 +5,20 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.textview.MaterialTextView
 import ru.chebertests.findfilmapp.R
 import ru.chebertests.findfilmapp.databinding.FilmListFragmentBinding
 import ru.chebertests.findfilmapp.extensions.AppState
 import ru.chebertests.findfilmapp.model.Film
+import ru.chebertests.findfilmapp.model.dto.GenreDTO
 import ru.chebertests.findfilmapp.viewmodel.FilmListAdapter
 import ru.chebertests.findfilmapp.viewmodel.FilmsViewModel
 
@@ -24,6 +27,7 @@ class ListFilmFragment : Fragment() {
     private var _binding: FilmListFragmentBinding? = null
     private val binding get() = _binding!!
     private val adapter = FilmListAdapter()
+    private var genresList: List<GenreDTO> = listOf()
     private val adaptersByGenre: MutableList<FilmListAdapter> = mutableListOf()
     private val titlesGenre: MutableList<MaterialTextView> = mutableListOf()
 
@@ -40,12 +44,12 @@ class ListFilmFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+
         _binding = FilmListFragmentBinding.inflate(inflater, container, false)
 
         viewModel.getLiveData().observe(viewLifecycleOwner, Observer {
             renderData(it)
         })
-        viewModel.getGenresListFromRemote()
         viewModel.getListFilmFromRemote(null)
 
         return binding.root
@@ -53,15 +57,33 @@ class ListFilmFragment : Fragment() {
 
     private fun renderData(state: AppState) {
         when (state) {
-            is AppState.Success -> {
+            is AppState.SuccessOnListByGenre -> {
+                for (genre in genresList) {
+                    if (genre.id == state.genreID) {
+                        val index = genresList.indexOf(genre)
+                        adaptersByGenre[index].setFilmData(state.listFilms)
+                        adaptersByGenre[index].setFilmListener(filmClickListener)
+                        if (genre != genresList.last()) {
+                            viewModel.getListFilmFromRemote(genresList[index + 1].id.toString())
+                        } else {
+                            if (binding.loadingBar.visibility != View.GONE) {
+                                binding.loadingBar.visibility = View.GONE
+                            }
+                        }
+                    }
+                }
+            }
+            is AppState.SuccessOnList -> {
                 adapter.setFilmData(state.listFilms)
                 adapter.setFilmListener(filmClickListener)
                 binding.listOfFilms.adapter = adapter
                 binding.listOfFilms.layoutManager =
                     LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
+                viewModel.getGenresListFromRemote()
             }
             is AppState.SuccessOnGenres -> {
                 for (genre in state.genres) {
+                    genresList = state.genres
                     val index = state.genres.indexOf(genre)
                     titlesGenre.add(
                         MaterialTextView(binding.listsContainer.context).apply {
@@ -73,22 +95,41 @@ class ListFilmFragment : Fragment() {
                     adaptersByGenre.add(
                         FilmListAdapter()
                     )
-                    binding.listsContainer.addView(titlesGenre[index])
+                    with(binding.listsContainer) {
+                        addView(titlesGenre[index])
+                        addView(RecyclerView(context).apply {
+                            adapter = adaptersByGenre[index]
+                            layoutManager =
+                                LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
+                        })
+                    }
                 }
+                viewModel.getListFilmFromRemote(state.genres.first().id.toString())
             }
             is AppState.Loading -> {
-                //TODO("Повесить прогрессбар")
+                if (binding.loadingBar.visibility != View.VISIBLE) {
+                    binding.loadingBar.visibility = View.VISIBLE
+                }
             }
             is AppState.Error -> {
-                TODO("Обработать ошибку")
+                Toast.makeText(
+                    context,
+                    "Ошибка загрузки данных. Попробуем ещё раз",
+                    Toast.LENGTH_SHORT
+                ).show()
+                viewModel.getListFilmFromRemote(null)
             }
         }
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
-        _binding = null
         adapter::removeListener
+        for (adapter in adaptersByGenre) {
+            adapter::removeListener
+        }
+        binding.listsContainer.removeAllViews()
+        _binding = null
     }
 
     private val filmClickListener = object : OnFilmClickListener {

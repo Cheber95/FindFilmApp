@@ -1,5 +1,8 @@
 package ru.chebertests.findfilmapp.viewmodel
 
+import android.os.Build
+import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import retrofit2.Call
@@ -12,7 +15,6 @@ import ru.chebertests.findfilmapp.model.dto.*
 import ru.chebertests.findfilmapp.model.remoteDataSources.RemoteFilmsSource
 import ru.chebertests.findfilmapp.model.repository.FilmRemoteRepository
 import java.time.LocalDate
-import java.util.*
 
 private const val SERVER_ERROR = "Ошибка загрузки данных"
 
@@ -26,7 +28,7 @@ class FilmsViewModel(
 
     fun getListFilmFromRemote(genres: String?) {
         filmsLiveData.value = AppState.Loading
-        filmRemoteRepository.getData(genres, callbackList)
+        filmRemoteRepository.getFilmsList(genres, callbackList)
     }
 
     fun getFilmDetailFromRemote(film: Film) {
@@ -41,11 +43,13 @@ class FilmsViewModel(
 
     private val callbackList = object : Callback<FilmsDTO> {
 
+        @RequiresApi(Build.VERSION_CODES.O)
         override fun onResponse(call: Call<FilmsDTO>, response: Response<FilmsDTO>) {
             val serverResponse: FilmsDTO? = response.body()
             filmsLiveData.postValue(
                 if (response.isSuccessful && serverResponse != null) {
-                    chekResponseList(serverResponse)
+                    val requestURL = response.toString().substringAfter("url=").replace("}","")
+                    chekResponseList(serverResponse, requestURL)
                 } else {
                     AppState.Error(Throwable(SERVER_ERROR))
                 }
@@ -59,6 +63,7 @@ class FilmsViewModel(
     }
 
     private val callbackFilm = object : Callback<FilmDetailDTO> {
+        @RequiresApi(Build.VERSION_CODES.O)
         override fun onResponse(call: Call<FilmDetailDTO>, response: Response<FilmDetailDTO>) {
             val serverResponse: FilmDetailDTO? = response.body()
             filmsLiveData.postValue(
@@ -94,13 +99,20 @@ class FilmsViewModel(
 
     }
 
-    private fun chekResponseList(serverResponse: FilmsDTO): AppState =
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun chekResponseList(serverResponse: FilmsDTO, requestURL: String): AppState =
         if (serverResponse.results != null) {
-            AppState.Success(convertFilmsFromDTO(serverResponse))
+            if (requestURL.contains("with_genres")){
+                val genreID = requestURL.substringAfter("with_genres=").toInt()
+                AppState.SuccessOnListByGenre(convertFilmsFromDTO(serverResponse), genreID)
+            } else {
+                AppState.SuccessOnList(convertFilmsFromDTO(serverResponse))
+            }
         } else {
             AppState.Error(Throwable(SERVER_ERROR))
         }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     private fun chekResponseFilm(serverResponse: FilmDetailDTO): AppState =
         if (serverResponse.id != null) {
             AppState.SuccessOnFilm(convertFilmDetailFromFilmDetailDTO(serverResponse))
@@ -115,9 +127,17 @@ class FilmsViewModel(
             AppState.Error(Throwable(SERVER_ERROR))
         }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     private fun convertFilmsFromDTO(filmsDTO: FilmsDTO): List<Film> {
         val listFilms = mutableListOf<Film>()
         for (film in filmsDTO.results!!) {
+            var year: Int
+            try {
+                year = LocalDate.parse(film.release_date).year
+            } catch (e: Exception) {
+                Log.e(e.toString(), film.title + film.id.toString())
+                year = 0
+            }
             with(film) {
                 listFilms.add(
                     Film(
@@ -125,7 +145,7 @@ class FilmsViewModel(
                         title!!,
                         "https://image.tmdb.org/t/p/original/${poster_path!!}",
                         vote_average!!,
-                        LocalDate.parse(release_date).year
+                        year
                     )
                 )
             }
@@ -133,18 +153,27 @@ class FilmsViewModel(
         return listFilms
     }
 
-    private fun convertFilmDetailFromFilmDetailDTO(filmDetailDTO: FilmDetailDTO) =
-        FilmDetail(
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun convertFilmDetailFromFilmDetailDTO(filmDetailDTO: FilmDetailDTO): FilmDetail {
+        var date = LocalDate.of(0, 1, 1)
+        try {
+            LocalDate.parse(filmDetailDTO.release_date)
+        } catch (e: Exception) {
+            Log.e(e.toString(), filmDetailDTO.title + filmDetailDTO.id.toString())
+            date = LocalDate.of(0, 1, 1)
+        }
+        return FilmDetail(
             filmDetailDTO.id!!,
             filmDetailDTO.title!!,
             "https://image.tmdb.org/t/p/original/${filmDetailDTO.poster_path!!}",
             filmDetailDTO.vote_average!!,
-            LocalDate.parse(filmDetailDTO.release_date!!),
+            date,
             filmDetailDTO.budget!!,
             genresToString(filmDetailDTO.genres!!),
             filmDetailDTO.overview!!,
             countriesToString(filmDetailDTO.production_countries!!)
         )
+    }
 
     private fun genresToString(genres: List<GenreDTO>): String {
         val genresString = mutableListOf<String>()
