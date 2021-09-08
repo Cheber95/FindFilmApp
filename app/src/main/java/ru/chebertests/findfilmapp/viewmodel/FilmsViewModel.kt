@@ -26,9 +26,9 @@ class FilmsViewModel(
 
     fun getLiveData() = filmsLiveData
 
-    fun getListFilmFromRemote(genres: String?) {
+    fun getListFilmFromRemote(genres: String?, isAdult: Boolean) {
         filmsLiveData.value = AppState.Loading
-        filmRemoteRepository.getFilmsList(genres, callbackList)
+        filmRemoteRepository.getFilmsList(genres, isAdult, callbackList)
     }
 
     fun getFilmDetailFromRemote(film: Film) {

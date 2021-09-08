@@ -12,7 +12,6 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.textview.MaterialTextView
 import ru.chebertests.findfilmapp.R
 import ru.chebertests.findfilmapp.databinding.FilmListFragmentBinding
@@ -30,6 +29,7 @@ class ListFilmFragment : Fragment() {
     private var genresList: List<GenreDTO> = listOf()
     private val adaptersByGenre: MutableList<FilmListAdapter> = mutableListOf()
     private val titlesGenre: MutableList<MaterialTextView> = mutableListOf()
+    private var isAdult: Boolean = false
 
     private val viewModel: FilmsViewModel by lazy {
         ViewModelProvider(this).get(FilmsViewModel::class.java)
@@ -47,10 +47,25 @@ class ListFilmFragment : Fragment() {
 
         _binding = FilmListFragmentBinding.inflate(inflater, container, false)
 
+        binding.adultFAB.setOnClickListener {
+            if (isAdult) {
+                binding.adultFAB.setImageResource(R.drawable.ic_adult_disabled)
+            } else {
+                binding.adultFAB.setImageResource(R.drawable.ic_adult_enabled)
+            }
+            adapter::removeListener
+            for (adapter in adaptersByGenre) {
+                adapter.removeListener()
+            }
+            binding.listsContainer.removeAllViews()
+            isAdult = !isAdult
+            viewModel.getListFilmFromRemote(null, isAdult)
+        }
+
         viewModel.getLiveData().observe(viewLifecycleOwner, Observer {
             renderData(it)
         })
-        viewModel.getListFilmFromRemote(null)
+        viewModel.getListFilmFromRemote(null, isAdult)
 
         return binding.root
     }
@@ -64,7 +79,7 @@ class ListFilmFragment : Fragment() {
                         adaptersByGenre[index].setFilmData(state.listFilms)
                         adaptersByGenre[index].setFilmListener(filmClickListener)
                         if (genre != genresList.last()) {
-                            viewModel.getListFilmFromRemote(genresList[index + 1].id.toString())
+                            viewModel.getListFilmFromRemote(genresList[index + 1].id.toString(), isAdult)
                         } else {
                             if (binding.loadingBar.visibility != View.GONE) {
                                 binding.loadingBar.visibility = View.GONE
@@ -104,7 +119,7 @@ class ListFilmFragment : Fragment() {
                         })
                     }
                 }
-                viewModel.getListFilmFromRemote(state.genres.first().id.toString())
+                viewModel.getListFilmFromRemote(state.genres.first().id.toString(), isAdult)
             }
             is AppState.Loading -> {
                 if (binding.loadingBar.visibility != View.VISIBLE) {
@@ -117,7 +132,7 @@ class ListFilmFragment : Fragment() {
                     "Ошибка загрузки данных. Попробуем ещё раз",
                     Toast.LENGTH_SHORT
                 ).show()
-                viewModel.getListFilmFromRemote(null)
+                viewModel.getListFilmFromRemote(null, isAdult)
             }
         }
     }
