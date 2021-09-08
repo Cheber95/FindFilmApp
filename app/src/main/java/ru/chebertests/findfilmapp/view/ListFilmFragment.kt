@@ -1,5 +1,6 @@
 package ru.chebertests.findfilmapp.view
 
+import android.content.Context
 import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -21,6 +22,8 @@ import ru.chebertests.findfilmapp.model.dto.GenreDTO
 import ru.chebertests.findfilmapp.viewmodel.FilmListAdapter
 import ru.chebertests.findfilmapp.viewmodel.FilmsViewModel
 
+private const val IS_ADULT = "IS_ADULT"
+
 class ListFilmFragment : Fragment() {
 
     private var _binding: FilmListFragmentBinding? = null
@@ -29,7 +32,7 @@ class ListFilmFragment : Fragment() {
     private var genresList: List<GenreDTO> = listOf()
     private val adaptersByGenre: MutableList<FilmListAdapter> = mutableListOf()
     private val titlesGenre: MutableList<MaterialTextView> = mutableListOf()
-    private var isAdult: Boolean = false
+    private var isAdult: Boolean = true
 
     private val viewModel: FilmsViewModel by lazy {
         ViewModelProvider(this).get(FilmsViewModel::class.java)
@@ -47,18 +50,35 @@ class ListFilmFragment : Fragment() {
 
         _binding = FilmListFragmentBinding.inflate(inflater, container, false)
 
+        activity?.let {
+            isAdult = it.getPreferences(Context.MODE_PRIVATE).getBoolean(IS_ADULT, false)
+            if (isAdult) {
+                binding.adultFAB.setImageResource(R.drawable.ic_adult_enabled)
+            } else {
+                binding.adultFAB.setImageResource(R.drawable.ic_adult_disabled)
+            }
+        }
+
         binding.adultFAB.setOnClickListener {
             if (isAdult) {
                 binding.adultFAB.setImageResource(R.drawable.ic_adult_disabled)
             } else {
                 binding.adultFAB.setImageResource(R.drawable.ic_adult_enabled)
             }
+            isAdult = !isAdult
+
+            val sharedPref = activity?.getPreferences(Context.MODE_PRIVATE)
+            val editor = sharedPref?.edit()
+            editor?.let {
+                it.putBoolean(IS_ADULT, isAdult)
+                it.apply()
+            }
+
             adapter::removeListener
             for (adapter in adaptersByGenre) {
                 adapter.removeListener()
             }
             binding.listsContainer.removeAllViews()
-            isAdult = !isAdult
             viewModel.getListFilmFromRemote(null, isAdult)
         }
 
