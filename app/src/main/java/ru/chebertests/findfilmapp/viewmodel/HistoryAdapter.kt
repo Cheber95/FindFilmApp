@@ -9,6 +9,7 @@ import androidx.core.net.toUri
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import ru.chebertests.findfilmapp.databinding.FilmCardItemBinding
+import ru.chebertests.findfilmapp.databinding.FilmHistoryCardItemBinding
 import ru.chebertests.findfilmapp.model.FilmDetail
 
 class HistoryAdapter : RecyclerView.Adapter<HistoryAdapter.HistoryViewHolder>() {
@@ -20,14 +21,25 @@ class HistoryAdapter : RecyclerView.Adapter<HistoryAdapter.HistoryViewHolder>() 
         notifyDataSetChanged()
     }
 
-    inner class HistoryViewHolder(private val binding: FilmCardItemBinding) :
+    inner class HistoryViewHolder(private val binding: FilmHistoryCardItemBinding) :
         RecyclerView.ViewHolder(binding.root) {
 
         @RequiresApi(Build.VERSION_CODES.O)
         fun bind(filmDetail: FilmDetail) {
             with(binding) {
                 nameOfFilm.text = filmDetail.name
-                filmDate.text = filmDetail.releaseDate.year.toString()
+                Glide
+                    .with(root)
+                    .load(filmDetail.posterPath)
+                    .into(posterFilm)
+                countryFilmFull.text = film.countries
+                dateFilmFull.text = "Премьера: ${film.releaseDate.format(dateFormatter)}"
+                genre.text = film.genres
+                overviewFull.text = film.overview
+                budget.text = String.format("Бюджет: %d $", film.budget)
+                rating.text = String.format("Рейтинг: %.1f", film.voteAverage)
+                nameOfFilm.text = filmDetail.name
+                filmDate.text = filmDetail.releaseDate.format()
                 filmRating.text = filmDetail.voteAverage.toString()
 
                 Glide

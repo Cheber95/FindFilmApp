@@ -67,6 +67,13 @@ class FilmDetailFragment : Fragment() {
                     if (binding.loadingBarDetail.visibility != View.GONE) {
                         binding.loadingBarDetail.visibility = View.GONE
                     }
+                    film.setTimeLong(System.currentTimeMillis())
+                    saveComment.setOnClickListener {
+                        film.setNote(commentField.text.toString())
+                        Thread {
+                            viewModel.saveFilmToDB(state.filmDetail)
+                        }.start()
+                    }
                 }
                 Thread {
                     viewModel.saveFilmToDB(state.filmDetail)

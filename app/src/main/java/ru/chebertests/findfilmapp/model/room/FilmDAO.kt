@@ -11,7 +11,7 @@ interface FilmDAO {
     @Query("SELECT * FROM FilmEntity WHERE name LIKE :name")
     fun getDataByWord(name: String): List<FilmEntity>
 
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insert(entity: FilmEntity)
 
     @Update
