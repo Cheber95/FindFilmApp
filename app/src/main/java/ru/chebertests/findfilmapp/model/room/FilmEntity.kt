@@ -16,5 +16,7 @@ data class FilmEntity(
     val budget: Int,
     val genres: String,
     val overview: String,
-    val countries: String
+    val countries: String,
+    val note: String,
+    val time: Long
 )

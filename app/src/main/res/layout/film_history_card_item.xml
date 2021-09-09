@@ -68,9 +68,18 @@
                     android:textAppearance="@style/TextAppearance.AppCompat.Small"/>
 
                 <TextView
+                    android:id="@+id/film_history_overview"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/card_list_margin"
+                    tools:text="@string/some_film_name"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Small"/>
+
+                <TextView
                     android:id="@+id/film_history_note"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/card_list_margin"
                     tools:text="@string/some_film_name"
                     android:textAppearance="@style/TextAppearance.AppCompat.Small"/>
 

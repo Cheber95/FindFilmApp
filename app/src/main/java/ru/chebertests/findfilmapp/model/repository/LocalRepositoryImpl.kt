@@ -32,25 +32,32 @@ class LocalRepositoryImpl(private val localDataSource: FilmDAO) : LocalRepositor
                 budget,
                 genres,
                 overview,
-                countries
+                countries,
+                getNote(),
+                getTimeLong()
             )
         }
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
     private fun convertFilmEntityToFilm(list: List<FilmEntity>): List<FilmDetail> {
-        return list.map {
-            FilmDetail(
-                it.id.toInt(),
-                it.name,
-                it.posterPath,
-                it.voteAverage,
-                LocalDate.ofEpochDay(it.releaseDate),
-                it.budget,
-                it.genres,
-                it.overview,
-                it.countries
+        var listFilms: MutableList<FilmDetail> = mutableListOf()
+        for (entity in list) {
+            val film = FilmDetail(
+                entity.id.toInt(),
+                entity.name,
+                entity.posterPath,
+                entity.voteAverage,
+                LocalDate.ofEpochDay(entity.releaseDate),
+                entity.budget,
+                entity.genres,
+                entity.overview,
+                entity.countries
             )
+            film.setTimeLong(entity.time)
+            film.setNote(entity.note)
+            listFilms.add(film)
         }
+        return listFilms
     }
 }

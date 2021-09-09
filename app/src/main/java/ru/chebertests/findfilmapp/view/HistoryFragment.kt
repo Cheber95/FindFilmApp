@@ -38,7 +38,7 @@ class HistoryFragment : Fragment() {
 
         binding.historyOfFilms.adapter = adapter
         binding.historyOfFilms.layoutManager =
-            GridLayoutManager(context, 3, GridLayoutManager.VERTICAL, false)
+            LinearLayoutManager(context,LinearLayoutManager.VERTICAL, false)
 
         viewModel.getLiveData().observe(viewLifecycleOwner, Observer {
             renderData(it)

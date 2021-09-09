@@ -1,5 +1,6 @@
 package ru.chebertests.findfilmapp.viewmodel
 
+import android.annotation.SuppressLint
 import android.os.Build
 import android.view.LayoutInflater
 import android.view.View
@@ -11,6 +12,8 @@ import com.bumptech.glide.Glide
 import ru.chebertests.findfilmapp.databinding.FilmCardItemBinding
 import ru.chebertests.findfilmapp.databinding.FilmHistoryCardItemBinding
 import ru.chebertests.findfilmapp.model.FilmDetail
+import java.time.format.DateTimeFormatter
+import java.util.*
 
 class HistoryAdapter : RecyclerView.Adapter<HistoryAdapter.HistoryViewHolder>() {
 
@@ -24,6 +27,7 @@ class HistoryAdapter : RecyclerView.Adapter<HistoryAdapter.HistoryViewHolder>() 
     inner class HistoryViewHolder(private val binding: FilmHistoryCardItemBinding) :
         RecyclerView.ViewHolder(binding.root) {
 
+        @SuppressLint("SetTextI18n")
         @RequiresApi(Build.VERSION_CODES.O)
         fun bind(filmDetail: FilmDetail) {
             with(binding) {
@@ -32,27 +36,26 @@ class HistoryAdapter : RecyclerView.Adapter<HistoryAdapter.HistoryViewHolder>() 
                     .with(root)
                     .load(filmDetail.posterPath)
                     .into(posterFilm)
-                countryFilmFull.text = film.countries
-                dateFilmFull.text = "Премьера: ${film.releaseDate.format(dateFormatter)}"
-                genre.text = film.genres
-                overviewFull.text = film.overview
-                budget.text = String.format("Бюджет: %d $", film.budget)
-                rating.text = String.format("Рейтинг: %.1f", film.voteAverage)
-                nameOfFilm.text = filmDetail.name
-                filmDate.text = filmDetail.releaseDate.format()
+                filmHistoryCountries.text = filmDetail.countries
+                historyFilmPremiere.text = "Премьера: ${
+                    filmDetail.releaseDate.format(
+                        DateTimeFormatter.ofPattern("d LLLL yyyy")
+                    )
+                }"
+                historyFilmGenres.text = filmDetail.genres
+                filmHistoryOverview.text = "Описание: ${filmDetail.overview}"
+                historyFilmBudget.text = String.format("Бюджет: %d $", filmDetail.budget)
                 filmRating.text = filmDetail.voteAverage.toString()
-
-                Glide
-                    .with(root.context)
-                    .load(filmDetail.posterPath.toUri())
-                    .into(posterFilm)
+                timeOnClicked.text = Date(filmDetail.getTimeLong()).toString()
+                filmHistoryNote.text = "Заметка: ${filmDetail.getNote()}"
             }
+            binding.timeOnClicked
         }
 
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): HistoryViewHolder {
-        val binding = FilmCardItemBinding.inflate(
+        val binding = FilmHistoryCardItemBinding.inflate(
             LayoutInflater.from(parent.context),
             parent,
             false
