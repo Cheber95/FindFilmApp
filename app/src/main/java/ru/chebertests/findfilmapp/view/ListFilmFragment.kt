@@ -1,112 +1,42 @@
 package ru.chebertests.findfilmapp.view
 
-import android.content.BroadcastReceiver
-import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
 import android.os.Build
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.textview.MaterialTextView
 import ru.chebertests.findfilmapp.R
 import ru.chebertests.findfilmapp.databinding.FilmListFragmentBinding
-import ru.chebertests.findfilmapp.model.Callback
+import ru.chebertests.findfilmapp.extensions.AppState
 import ru.chebertests.findfilmapp.model.Film
 import ru.chebertests.findfilmapp.model.dto.GenreDTO
-import ru.chebertests.findfilmapp.model.repository.FilmRemoteRepository
-import ru.chebertests.findfilmapp.model.repository.GenresRepository
-import ru.chebertests.findfilmapp.model.services.LoadFilmService
-import ru.chebertests.findfilmapp.model.services.LoadListService
 import ru.chebertests.findfilmapp.viewmodel.FilmListAdapter
-import ru.chebertests.findfilmapp.viewmodel.MainViewModel
-
-private const val LOAD_LIST_INTENT_FILTER = "LOAD LIST INTENT FILTER"
-
-private const val LOAD_RESULT_EXTRA = "LOAD RESULT"
-private const val LOAD_INTENT_EMPTY_EXTRA = "INTENT IS EMPTY"
-private const val LOAD_DATA_EMPTY_EXTRA = "DATA IS EMPTY"
-private const val LOAD_REQUEST_ERROR_EXTRA = "REQUEST ERROR"
-private const val LOAD_URL_MALFORMED_EXTRA = "URL MALFORMED"
-private const val LIST_FILM_LOAD_SUCCESS_EXTRA = "LIST OF FILM LOAD SUCCESS EXTRA"
-private const val PROCESS_ERROR = "Обработка ошибки"
+import ru.chebertests.findfilmapp.viewmodel.FilmsViewModel
 
 class ListFilmFragment : Fragment() {
 
-    private var mViewModel: MainViewModel? = null
     private var _binding: FilmListFragmentBinding? = null
     private val binding get() = _binding!!
     private val adapter = FilmListAdapter()
+    private var genresList: List<GenreDTO> = listOf()
+    private val adaptersByGenre: MutableList<FilmListAdapter> = mutableListOf()
+    private val titlesGenre: MutableList<MaterialTextView> = mutableListOf()
 
-    private val loadResultsReceiver: BroadcastReceiver = object : BroadcastReceiver() {
-
-        @RequiresApi(Build.VERSION_CODES.N)
-        override fun onReceive(context: Context?, intent: Intent?) {
-            when (intent?.getStringExtra(LOAD_RESULT_EXTRA)) {
-                LOAD_INTENT_EMPTY_EXTRA -> TODO(PROCESS_ERROR)
-                LOAD_DATA_EMPTY_EXTRA -> TODO(PROCESS_ERROR)
-                LOAD_REQUEST_ERROR_EXTRA -> TODO(PROCESS_ERROR)
-                LOAD_URL_MALFORMED_EXTRA -> TODO(PROCESS_ERROR)
-
-                LIST_FILM_LOAD_SUCCESS_EXTRA -> {
-                    with(adapter) {
-                        setFilmData(
-                            intent
-                                .getParcelableArrayExtra(LIST_FILM_LOAD_SUCCESS_EXTRA)
-                                ?.toList() as List<Film>
-                        )
-                        binding.listOfFilms.also {
-                            it.adapter = this@with
-                            it.layoutManager = LinearLayoutManager(
-                                context,
-                                LinearLayoutManager.HORIZONTAL,
-                                false
-                            )
-                        }
-                        setFilmListener(object : OnFilmClickListener {
-                            override fun onFilmClick(film: Film) {
-                                val manager = parentFragmentManager
-                                val bundle = Bundle()
-                                bundle.putParcelable(
-                                    FilmDetailFragment.BUNDLE_EXTRA,
-                                    film
-                                )
-                                manager
-                                    .beginTransaction()
-                                    .replace(
-                                        R.id.container_general,
-                                        FilmDetailFragment.newInstance(bundle)
-                                    )
-                                    .addToBackStack(FilmDetailFragment.BUNDLE_EXTRA)
-                                    .commit()
-                            }
-                        })
-                    }
-                }
-            }
-        }
+    private val viewModel: FilmsViewModel by lazy {
+        ViewModelProvider(this).get(FilmsViewModel::class.java)
     }
 
     interface OnFilmClickListener {
         fun onFilmClick(film: Film)
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        mViewModel = ViewModelProvider(this).get(MainViewModel::class.java)
-        context?.let {
-            LocalBroadcastManager.getInstance(it)
-                .registerReceiver(loadResultsReceiver, IntentFilter(LOAD_LIST_INTENT_FILTER))
-        }
     }
 
     @RequiresApi(Build.VERSION_CODES.N)
@@ -114,30 +44,105 @@ class ListFilmFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+
         _binding = FilmListFragmentBinding.inflate(inflater, container, false)
 
-
-        context?.let {
-            it.startService(Intent(it, LoadListService::class.java).apply {
-                putExtra(COMMAND, TO_LOAD_LIST_OF_FILMS)
-            })
-        }
+        viewModel.getLiveData().observe(viewLifecycleOwner, Observer {
+            renderData(it)
+        })
+        viewModel.getListFilmFromRemote(null)
 
         return binding.root
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
-        adapter::removeListener
+    private fun renderData(state: AppState) {
+        when (state) {
+            is AppState.SuccessOnListByGenre -> {
+                for (genre in genresList) {
+                    if (genre.id == state.genreID) {
+                        val index = genresList.indexOf(genre)
+                        adaptersByGenre[index].setFilmData(state.listFilms)
+                        adaptersByGenre[index].setFilmListener(filmClickListener)
+                        if (genre != genresList.last()) {
+                            viewModel.getListFilmFromRemote(genresList[index + 1].id.toString())
+                        } else {
+                            if (binding.loadingBar.visibility != View.GONE) {
+                                binding.loadingBar.visibility = View.GONE
+                            }
+                        }
+                    }
+                }
+            }
+            is AppState.SuccessOnList -> {
+                adapter.setFilmData(state.listFilms)
+                adapter.setFilmListener(filmClickListener)
+                binding.listOfFilms.adapter = adapter
+                binding.listOfFilms.layoutManager =
+                    LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
+                viewModel.getGenresListFromRemote()
+            }
+            is AppState.SuccessOnGenres -> {
+                for (genre in state.genres) {
+                    genresList = state.genres
+                    val index = state.genres.indexOf(genre)
+                    titlesGenre.add(
+                        MaterialTextView(binding.listsContainer.context).apply {
+                            text = genre.name?.replaceFirstChar { it.uppercase() }
+                            layoutParams = binding.listsContainer.layoutParams
+                            setTextAppearance(R.style.TextAppearance_MaterialComponents_Headline5)
+                        }
+                    )
+                    adaptersByGenre.add(
+                        FilmListAdapter()
+                    )
+                    with(binding.listsContainer) {
+                        addView(titlesGenre[index])
+                        addView(RecyclerView(context).apply {
+                            adapter = adaptersByGenre[index]
+                            layoutManager =
+                                LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
+                        })
+                    }
+                }
+                viewModel.getListFilmFromRemote(state.genres.first().id.toString())
+            }
+            is AppState.Loading -> {
+                if (binding.loadingBar.visibility != View.VISIBLE) {
+                    binding.loadingBar.visibility = View.VISIBLE
+                }
+            }
+            is AppState.Error -> {
+                Toast.makeText(
+                    context,
+                    "Ошибка загрузки данных. Попробуем ещё раз",
+                    Toast.LENGTH_SHORT
+                ).show()
+                viewModel.getListFilmFromRemote(null)
+            }
+        }
     }
 
-    override fun onDestroy() {
-        context?.let {
-            LocalBroadcastManager.getInstance(it)
-                .unregisterReceiver(loadResultsReceiver)
+    override fun onDestroyView() {
+        super.onDestroyView()
+        adapter::removeListener
+        for (adapter in adaptersByGenre) {
+            adapter::removeListener
         }
-        super.onDestroy()
+        binding.listsContainer.removeAllViews()
+        _binding = null
+    }
+
+    private val filmClickListener = object : OnFilmClickListener {
+        override fun onFilmClick(film: Film) {
+            val manager = parentFragmentManager
+            val bundle = Bundle()
+            bundle.putParcelable(FilmDetailFragment.BUNDLE_EXTRA, film)
+            manager
+                .beginTransaction()
+                .replace(R.id.container_general, FilmDetailFragment.newInstance(bundle))
+                .addToBackStack(FilmDetailFragment.BUNDLE_EXTRA)
+                .commit()
+        }
     }
 
     companion object {
