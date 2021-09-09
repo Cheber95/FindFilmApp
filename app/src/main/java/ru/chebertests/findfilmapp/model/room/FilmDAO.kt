@@ -2,6 +2,7 @@ package ru.chebertests.findfilmapp.model.room
 
 import androidx.room.*
 
+@Dao
 interface FilmDAO {
 
     @Query("SELECT * FROM FilmEntity")

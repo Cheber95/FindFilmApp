@@ -68,6 +68,9 @@ class FilmDetailFragment : Fragment() {
                         binding.loadingBarDetail.visibility = View.GONE
                     }
                 }
+                Thread {
+                    viewModel.saveFilmToDB(state.filmDetail)
+                }.start()
             }
             is AppState.Loading -> {
                 if (binding.loadingBarDetail.visibility != View.VISIBLE) {

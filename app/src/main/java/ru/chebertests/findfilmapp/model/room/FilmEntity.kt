@@ -12,7 +12,7 @@ data class FilmEntity(
     val name: String,
     val posterPath: String,
     val voteAverage: Double,
-    val releaseDate: LocalDate,
+    val releaseDate: Long,
     val budget: Int,
     val genres: String,
     val overview: String,
