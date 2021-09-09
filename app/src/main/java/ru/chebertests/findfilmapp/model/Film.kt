@@ -11,4 +11,3 @@ data class Film(
     val voteAverage: Double,
     val year: Int
 ) : Parcelable
-

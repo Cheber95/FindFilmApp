@@ -8,23 +8,23 @@ import ru.chebertests.findfilmapp.databinding.MainActivityBinding
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var binding: MainActivityBinding
-    private lateinit var bindingGeneral: GeneralFragmentBinding
+    private var binding: MainActivityBinding? = null
+    private var bindingGeneral: GeneralFragmentBinding? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = MainActivityBinding.inflate(layoutInflater)
         bindingGeneral = GeneralFragmentBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+        setContentView(binding!!.root)
 
         if (savedInstanceState == null) {
             supportFragmentManager.beginTransaction()
-                .add(bindingGeneral.containerGeneral.id, ListFilmFragment.newInstance())
+                .add(bindingGeneral!!.containerGeneral.id, ListFilmFragment.newInstance())
                 .commit()
-            binding.container.addView(bindingGeneral.root)
+            binding!!.container.addView(bindingGeneral!!.root)
         }
 
-        bindingGeneral.bottomNavigation.also { bottomNavigation ->
+        bindingGeneral!!.bottomNavigation.also { bottomNavigation ->
             bottomNavigation.setOnItemSelectedListener { item ->
                 when (item.itemId) {
                     R.id.bottom_menu_films_fragment -> {
@@ -41,7 +41,11 @@ class MainActivity : AppCompatActivity() {
                 true
             }
         }
+    }
 
-
+    override fun onDestroy() {
+        binding = null
+        bindingGeneral = null
+        super.onDestroy()
     }
 }
