@@ -26,26 +26,34 @@
 
     </com.google.android.material.appbar.AppBarLayout>
 
-    <LinearLayout
+    <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+        app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior">
+        <LinearLayout
+            android:id="@+id/lists_container"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginStart="@dimen/card_list_margin"
+            android:layout_marginTop="@dimen/card_list_margin"
+            android:orientation="vertical"
+            app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/list_of_films_title"
-            android:textAppearance="@style/TextAppearance.MaterialComponents.Headline5"
-            android:layout_marginStart="@dimen/card_list_margin"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/card_list_margin"
+                android:layout_marginTop="@dimen/card_list_margin"
+                android:text="@string/list_of_films_title"
+                android:textAppearance="@style/TextAppearance.MaterialComponents.Headline5" />
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/list_of_films"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginStart="@dimen/card_list_margin"/>
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/list_of_films"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"/>
 
-    </LinearLayout>
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
