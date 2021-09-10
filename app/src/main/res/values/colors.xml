@@ -11,4 +11,5 @@
     <color name="bottom_menu_back">#FF465458</color>
     <color name="bottom_item_is_selected">#FF6c1010</color>
     <color name="textColorDisabled">#FF3b3b3b</color>
+    <color name="background_list">#55d2dde2</color>
 </resources>

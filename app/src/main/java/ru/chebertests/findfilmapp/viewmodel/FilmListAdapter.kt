@@ -37,7 +37,8 @@ class FilmListAdapter :
         return FilmViewHolder(binding)
     }
 
-    override fun onBindViewHolder(holder: FilmViewHolder, position: Int) = holder.bind(filmData[position])
+    override fun onBindViewHolder(holder: FilmViewHolder, position: Int) =
+        holder.bind(filmData[position])
 
     override fun getItemCount() = filmData.size
 
