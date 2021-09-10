@@ -2,7 +2,6 @@ package ru.chebertests.findfilmapp.model.repository
 
 import android.os.Build
 import androidx.annotation.RequiresApi
-import ru.chebertests.findfilmapp.model.Film
 import ru.chebertests.findfilmapp.model.FilmDetail
 import ru.chebertests.findfilmapp.model.room.FilmDAO
 import ru.chebertests.findfilmapp.model.room.FilmEntity
@@ -13,6 +12,15 @@ class LocalRepositoryImpl(private val localDataSource: FilmDAO) : LocalRepositor
     @RequiresApi(Build.VERSION_CODES.O)
     override fun getAllHistory(): List<FilmDetail> {
         return convertFilmEntityToFilm(localDataSource.all())
+    }
+
+    override fun clearHistory() {
+        localDataSource.deleteAll()
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    override fun updateEntity(filmDetail: FilmDetail) {
+        localDataSource.update(convertFilmToFilmEntity(filmDetail))
     }
 
     @RequiresApi(Build.VERSION_CODES.O)

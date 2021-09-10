@@ -40,6 +40,10 @@ class HistoryFragment : Fragment() {
         binding.historyOfFilms.layoutManager =
             LinearLayoutManager(context,LinearLayoutManager.VERTICAL, false)
 
+        binding.clearHistory.setOnClickListener {
+            viewModel.deleteAllHistory()
+        }
+
         viewModel.getLiveData().observe(viewLifecycleOwner, Observer {
             renderData(it)
         })

@@ -11,4 +11,5 @@
     <string name="history_of_films_title">История просмотров</string>
     <string name="item_bot_menu_history">История</string>
     <string name="save_comment_button_text">Сохранить отзыв</string>
+    <string name="clear_history_button">Очистить историю</string>
 </resources>

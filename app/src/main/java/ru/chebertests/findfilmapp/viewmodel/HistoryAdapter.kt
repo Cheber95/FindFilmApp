@@ -12,6 +12,11 @@ import com.bumptech.glide.Glide
 import ru.chebertests.findfilmapp.databinding.FilmCardItemBinding
 import ru.chebertests.findfilmapp.databinding.FilmHistoryCardItemBinding
 import ru.chebertests.findfilmapp.model.FilmDetail
+import java.text.DateFormat
+import java.text.SimpleDateFormat
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.util.*
 
@@ -30,6 +35,20 @@ class HistoryAdapter : RecyclerView.Adapter<HistoryAdapter.HistoryViewHolder>() 
         @SuppressLint("SetTextI18n")
         @RequiresApi(Build.VERSION_CODES.O)
         fun bind(filmDetail: FilmDetail) {
+            val timeAndDate = Calendar.getInstance()
+            timeAndDate.timeInMillis = filmDetail.getTimeLong()
+            val time = LocalTime.of(
+                timeAndDate.get(Calendar.HOUR_OF_DAY),
+                timeAndDate.get(Calendar.MINUTE),
+                timeAndDate.get(Calendar.SECOND)
+            )
+            val date = LocalDate.of(
+                timeAndDate.get(Calendar.YEAR),
+                timeAndDate.get(Calendar.MONTH),
+                timeAndDate.get(Calendar.DAY_OF_MONTH)
+            )
+            val dateFormatter = DateTimeFormatter.ofPattern("d LLLL yyyy")
+            val timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss")
             with(binding) {
                 nameOfFilm.text = filmDetail.name
                 Glide
@@ -38,16 +57,15 @@ class HistoryAdapter : RecyclerView.Adapter<HistoryAdapter.HistoryViewHolder>() 
                     .into(posterFilm)
                 filmHistoryCountries.text = filmDetail.countries
                 historyFilmPremiere.text = "Премьера: ${
-                    filmDetail.releaseDate.format(
-                        DateTimeFormatter.ofPattern("d LLLL yyyy")
-                    )
+                    filmDetail.releaseDate.format(dateFormatter)
                 }"
                 historyFilmGenres.text = filmDetail.genres
                 filmHistoryOverview.text = "Описание: ${filmDetail.overview}"
                 historyFilmBudget.text = String.format("Бюджет: %d $", filmDetail.budget)
                 filmRating.text = filmDetail.voteAverage.toString()
-                timeOnClicked.text = Date(filmDetail.getTimeLong()).toString()
                 filmHistoryNote.text = "Заметка: ${filmDetail.getNote()}"
+                timeOnClicked.text =
+                    "Просмотрено: ${date.format(dateFormatter)} ${time.format(timeFormatter)}"
             }
             binding.timeOnClicked
         }

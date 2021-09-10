@@ -1,6 +1,8 @@
 package ru.chebertests.findfilmapp.viewmodel
 
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.MutableLiveData
@@ -46,7 +48,15 @@ class FilmsViewModel(
     }
 
     fun saveFilmToDB(filmDetail: FilmDetail) {
-        filmLocalRepository.saveEntity(filmDetail)
+        Thread {
+            filmLocalRepository.saveEntity(filmDetail)
+        }.start()
+    }
+
+    fun updateFilmOnDB(filmDetail: FilmDetail) {
+        Thread {
+            filmLocalRepository.updateEntity(filmDetail)
+        }.start()
     }
 
     private val callbackList = object : Callback<FilmsDTO> {

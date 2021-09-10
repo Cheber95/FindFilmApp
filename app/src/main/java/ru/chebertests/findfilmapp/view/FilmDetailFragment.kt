@@ -67,17 +67,15 @@ class FilmDetailFragment : Fragment() {
                     if (binding.loadingBarDetail.visibility != View.GONE) {
                         binding.loadingBarDetail.visibility = View.GONE
                     }
-                    film.setTimeLong(System.currentTimeMillis())
+                    if (film.getTimeLong() == 0L) {
+                        film.setTimeLong(System.currentTimeMillis())
+                    }
                     saveComment.setOnClickListener {
                         film.setNote(commentField.text.toString())
-                        Thread {
-                            viewModel.saveFilmToDB(state.filmDetail)
-                        }.start()
+                        viewModel.updateFilmOnDB(state.filmDetail)
                     }
                 }
-                Thread {
-                    viewModel.saveFilmToDB(state.filmDetail)
-                }.start()
+                viewModel.saveFilmToDB(state.filmDetail)
             }
             is AppState.Loading -> {
                 if (binding.loadingBarDetail.visibility != View.VISIBLE) {
@@ -90,7 +88,8 @@ class FilmDetailFragment : Fragment() {
                     "Ошибка загрузки данных. Попробуем ещё раз",
                     Toast.LENGTH_SHORT
                 ).show()
-                arguments?.getParcelable<Film>(BUNDLE_EXTRA)?.let { viewModel.getFilmDetailFromRemote(it) }
+                arguments?.getParcelable<Film>(BUNDLE_EXTRA)
+                    ?.let { viewModel.getFilmDetailFromRemote(it) }
             }
         }
     }
