@@ -15,4 +15,17 @@ data class FilmDetail(
     val genres: String,
     val overview: String,
     val countries: String
-) : Parcelable
+) : Parcelable {
+    private var note: String = ""
+    private var timeLong: Long = 0L
+
+    fun getNote() = note
+    fun setNote(newNote: String) {
+        note = newNote
+    }
+
+    fun getTimeLong() = timeLong
+    fun setTimeLong(newTimeLong: Long) {
+        timeLong = newTimeLong
+    }
+}

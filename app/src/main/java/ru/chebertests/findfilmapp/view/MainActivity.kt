@@ -32,6 +32,11 @@ class MainActivity : AppCompatActivity() {
                             .replace(R.id.container_general, ListFilmFragment.newInstance())
                             .commitNow()
                     }
+                    R.id.bottom_menu_history_fragment -> {
+                        supportFragmentManager.beginTransaction()
+                            .replace(R.id.container_general, HistoryFragment.newInstance())
+                            .commitNow()
+                    }
                     R.id.bottom_menu_profile_settings -> {
                         supportFragmentManager.beginTransaction()
                             .replace(R.id.container_general, SettingsFragment.newInstance())

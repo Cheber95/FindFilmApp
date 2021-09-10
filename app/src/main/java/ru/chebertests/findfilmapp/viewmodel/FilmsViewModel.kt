@@ -1,6 +1,8 @@
 package ru.chebertests.findfilmapp.viewmodel
 
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.MutableLiveData
@@ -14,31 +16,47 @@ import ru.chebertests.findfilmapp.model.FilmDetail
 import ru.chebertests.findfilmapp.model.dto.*
 import ru.chebertests.findfilmapp.model.remoteDataSources.RemoteFilmsSource
 import ru.chebertests.findfilmapp.model.repository.FilmRemoteRepository
+import ru.chebertests.findfilmapp.model.repository.LocalRepository
+import ru.chebertests.findfilmapp.model.repository.LocalRepositoryImpl
 import java.time.LocalDate
+import ru.chebertests.findfilmapp.app.App.Companion.getHistoryDao
 
 private const val SERVER_ERROR = "Ошибка загрузки данных"
 
 class FilmsViewModel(
     private val filmsLiveData: MutableLiveData<AppState> = MutableLiveData(),
     private val filmRemoteRepository: FilmRemoteRepository =
-        FilmRemoteRepository(RemoteFilmsSource())
+        FilmRemoteRepository(RemoteFilmsSource()),
+    private val filmLocalRepository: LocalRepository = LocalRepositoryImpl(getHistoryDao())
 ) : ViewModel() {
 
     fun getLiveData() = filmsLiveData
 
-    fun getListFilmFromRemote(genres: String?) {
+    fun getListFilmFromRemote(genres: String?, isAdult: Boolean) {
         filmsLiveData.value = AppState.Loading
-        filmRemoteRepository.getFilmsList(genres, callbackList)
+        filmRemoteRepository.getFilmsList(genres, isAdult, callbackList)
     }
 
     fun getFilmDetailFromRemote(film: Film) {
         filmsLiveData.value = AppState.Loading
-        filmRemoteRepository.getFilm(film.id,callbackFilm)
+        filmRemoteRepository.getFilm(film.id, callbackFilm)
     }
 
     fun getGenresListFromRemote() {
         filmsLiveData.value = AppState.Loading
         filmRemoteRepository.getGenres(callbackListGenres)
+    }
+
+    fun saveFilmToDB(filmDetail: FilmDetail) {
+        Thread {
+            filmLocalRepository.saveEntity(filmDetail)
+        }.start()
+    }
+
+    fun updateFilmOnDB(filmDetail: FilmDetail) {
+        Thread {
+            filmLocalRepository.updateEntity(filmDetail)
+        }.start()
     }
 
     private val callbackList = object : Callback<FilmsDTO> {
@@ -48,7 +66,7 @@ class FilmsViewModel(
             val serverResponse: FilmsDTO? = response.body()
             filmsLiveData.postValue(
                 if (response.isSuccessful && serverResponse != null) {
-                    val requestURL = response.toString().substringAfter("url=").replace("}","")
+                    val requestURL = response.toString().substringAfter("url=").replace("}", "")
                     chekResponseList(serverResponse, requestURL)
                 } else {
                     AppState.Error(Throwable(SERVER_ERROR))
@@ -102,7 +120,7 @@ class FilmsViewModel(
     @RequiresApi(Build.VERSION_CODES.O)
     private fun chekResponseList(serverResponse: FilmsDTO, requestURL: String): AppState =
         if (serverResponse.results != null) {
-            if (requestURL.contains("with_genres")){
+            if (requestURL.contains("with_genres")) {
                 val genreID = requestURL.substringAfter("with_genres=").substringBefore("&").toInt()
                 AppState.SuccessOnListByGenre(convertFilmsFromDTO(serverResponse), genreID)
             } else {
@@ -119,6 +137,7 @@ class FilmsViewModel(
         } else {
             AppState.Error(Throwable(SERVER_ERROR))
         }
+
 
     private fun chekResponseGenres(serverResponse: GenresDTO): AppState =
         if (serverResponse.genres != null) {

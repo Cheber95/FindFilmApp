@@ -86,6 +86,20 @@
                 android:textAppearance="@style/TextAppearance.AppCompat.Small"
                 tools:text="@string/fight_club_overview" />
 
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/comment_field"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_margin="@dimen/card_list_margin" />
+
+            <Button
+                android:id="@+id/save_comment"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:backgroundTint="@color/bottom_item_is_selected"
+                android:layout_margin="@dimen/card_list_margin"
+                android:text="@string/save_comment_button_text"/>
+
         </LinearLayout>
 
     </ScrollView>

@@ -1,5 +1,6 @@
 package ru.chebertests.findfilmapp.view
 
+import android.content.Context
 import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -12,7 +13,6 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.textview.MaterialTextView
 import ru.chebertests.findfilmapp.R
 import ru.chebertests.findfilmapp.databinding.FilmListFragmentBinding
@@ -22,6 +22,8 @@ import ru.chebertests.findfilmapp.model.dto.GenreDTO
 import ru.chebertests.findfilmapp.viewmodel.FilmListAdapter
 import ru.chebertests.findfilmapp.viewmodel.FilmsViewModel
 
+private const val IS_ADULT = "IS_ADULT"
+
 class ListFilmFragment : Fragment() {
 
     private var _binding: FilmListFragmentBinding? = null
@@ -30,6 +32,7 @@ class ListFilmFragment : Fragment() {
     private var genresList: List<GenreDTO> = listOf()
     private val adaptersByGenre: MutableList<FilmListAdapter> = mutableListOf()
     private val titlesGenre: MutableList<MaterialTextView> = mutableListOf()
+    private var isAdult: Boolean = true
 
     private val viewModel: FilmsViewModel by lazy {
         ViewModelProvider(this).get(FilmsViewModel::class.java)
@@ -47,10 +50,42 @@ class ListFilmFragment : Fragment() {
 
         _binding = FilmListFragmentBinding.inflate(inflater, container, false)
 
+        activity?.let {
+            isAdult = it.getPreferences(Context.MODE_PRIVATE).getBoolean(IS_ADULT, false)
+            if (isAdult) {
+                binding.adultFAB.setImageResource(R.drawable.ic_adult_enabled)
+            } else {
+                binding.adultFAB.setImageResource(R.drawable.ic_adult_disabled)
+            }
+        }
+
+        binding.adultFAB.setOnClickListener {
+            if (isAdult) {
+                binding.adultFAB.setImageResource(R.drawable.ic_adult_disabled)
+            } else {
+                binding.adultFAB.setImageResource(R.drawable.ic_adult_enabled)
+            }
+            isAdult = !isAdult
+
+            val sharedPref = activity?.getPreferences(Context.MODE_PRIVATE)
+            val editor = sharedPref?.edit()
+            editor?.let {
+                it.putBoolean(IS_ADULT, isAdult)
+                it.apply()
+            }
+
+            adapter::removeListener
+            for (adapter in adaptersByGenre) {
+                adapter.removeListener()
+            }
+            binding.listsContainer.removeAllViews()
+            viewModel.getListFilmFromRemote(null, isAdult)
+        }
+
         viewModel.getLiveData().observe(viewLifecycleOwner, Observer {
             renderData(it)
         })
-        viewModel.getListFilmFromRemote(null)
+        viewModel.getListFilmFromRemote(null, isAdult)
 
         return binding.root
     }
@@ -64,7 +99,7 @@ class ListFilmFragment : Fragment() {
                         adaptersByGenre[index].setFilmData(state.listFilms)
                         adaptersByGenre[index].setFilmListener(filmClickListener)
                         if (genre != genresList.last()) {
-                            viewModel.getListFilmFromRemote(genresList[index + 1].id.toString())
+                            viewModel.getListFilmFromRemote(genresList[index + 1].id.toString(), isAdult)
                         } else {
                             if (binding.loadingBar.visibility != View.GONE) {
                                 binding.loadingBar.visibility = View.GONE
@@ -104,7 +139,7 @@ class ListFilmFragment : Fragment() {
                         })
                     }
                 }
-                viewModel.getListFilmFromRemote(state.genres.first().id.toString())
+                viewModel.getListFilmFromRemote(state.genres.first().id.toString(), isAdult)
             }
             is AppState.Loading -> {
                 if (binding.loadingBar.visibility != View.VISIBLE) {
@@ -117,7 +152,7 @@ class ListFilmFragment : Fragment() {
                     "Ошибка загрузки данных. Попробуем ещё раз",
                     Toast.LENGTH_SHORT
                 ).show()
-                viewModel.getListFilmFromRemote(null)
+                viewModel.getListFilmFromRemote(null, isAdult)
             }
         }
     }

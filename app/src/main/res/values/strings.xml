@@ -8,4 +8,8 @@
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="temp_text_in_fragments">скоро здесь будет чисто и красиво</string>
     <string name="rating_title">7.8</string>
+    <string name="history_of_films_title">История просмотров</string>
+    <string name="item_bot_menu_history">История</string>
+    <string name="save_comment_button_text">Сохранить отзыв</string>
+    <string name="clear_history_button">Очистить историю</string>
 </resources>
