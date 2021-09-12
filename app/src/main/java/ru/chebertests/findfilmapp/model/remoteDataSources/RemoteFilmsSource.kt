@@ -24,8 +24,13 @@ class RemoteFilmsSource {
         )
         .build().create(ListOfFilmsAPI::class.java)
 
-    fun getFilmsList(genres: String?, isAdult: Boolean, callback: Callback<FilmsDTO>) {
-        listOfFilmsAPI.getFilms(BuildConfig.TMDB_API_KEY, LANG_RUS, genres, isAdult)
+    fun getFilmsList(
+        genres: String?,
+        isAdult: Boolean,
+        page: Int? = 0,
+        callback: Callback<FilmsDTO>
+    ) {
+        listOfFilmsAPI.getFilms(BuildConfig.TMDB_API_KEY, LANG_RUS, genres, page, isAdult)
             .enqueue(callback)
     }
 

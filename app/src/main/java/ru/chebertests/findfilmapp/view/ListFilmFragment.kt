@@ -33,6 +33,7 @@ class ListFilmFragment : Fragment() {
     private val adaptersByGenre: MutableList<FilmListAdapter> = mutableListOf()
     private val titlesGenre: MutableList<MaterialTextView> = mutableListOf()
     private var isAdult: Boolean = true
+    private val defaultPage: Int = 1
 
     private val viewModel: FilmsViewModel by lazy {
         ViewModelProvider(this).get(FilmsViewModel::class.java)
@@ -79,13 +80,13 @@ class ListFilmFragment : Fragment() {
                 adapter.removeListener()
             }
             binding.listsContainer.removeAllViews()
-            viewModel.getListFilmFromRemote(null, isAdult)
+            viewModel.getListFilmFromRemote(null, defaultPage, isAdult)
         }
 
         viewModel.getLiveData().observe(viewLifecycleOwner, Observer {
             renderData(it)
         })
-        viewModel.getListFilmFromRemote(null, isAdult)
+        viewModel.getListFilmFromRemote(null, defaultPage, isAdult)
 
         return binding.root
     }
@@ -99,7 +100,11 @@ class ListFilmFragment : Fragment() {
                         adaptersByGenre[index].setFilmData(state.listFilms)
                         adaptersByGenre[index].setFilmListener(filmClickListener)
                         if (genre != genresList.last()) {
-                            viewModel.getListFilmFromRemote(genresList[index + 1].id.toString(), isAdult)
+                            viewModel.getListFilmFromRemote(
+                                genresList[index + 1].id.toString(),
+                                defaultPage,
+                                isAdult
+                            )
                         } else {
                             if (binding.loadingBar.visibility != View.GONE) {
                                 binding.loadingBar.visibility = View.GONE
@@ -139,7 +144,11 @@ class ListFilmFragment : Fragment() {
                         })
                     }
                 }
-                viewModel.getListFilmFromRemote(state.genres.first().id.toString(), isAdult)
+                viewModel.getListFilmFromRemote(
+                    state.genres.first().id.toString(),
+                    defaultPage,
+                    isAdult
+                )
             }
             is AppState.Loading -> {
                 if (binding.loadingBar.visibility != View.VISIBLE) {
@@ -152,7 +161,7 @@ class ListFilmFragment : Fragment() {
                     "Ошибка загрузки данных. Попробуем ещё раз",
                     Toast.LENGTH_SHORT
                 ).show()
-                viewModel.getListFilmFromRemote(null, isAdult)
+                viewModel.getListFilmFromRemote(null, defaultPage, isAdult)
             }
         }
     }

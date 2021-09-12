@@ -6,8 +6,13 @@ import ru.chebertests.findfilmapp.model.remoteDataSources.RemoteFilmsSource
 
 class FilmRemoteRepository(private val remoteFilmsSource: RemoteFilmsSource) : IFilmRepository {
 
-    override fun getFilmsList(genres: String?, isAdult: Boolean, callback: Callback<FilmsDTO>) {
-        remoteFilmsSource.getFilmsList(genres, isAdult, callback)
+    override fun getFilmsList(
+        genres: String?,
+        isAdult: Boolean,
+        page: Int?,
+        callback: Callback<FilmsDTO>
+    ) {
+        remoteFilmsSource.getFilmsList(genres, isAdult, page, callback)
     }
 
     override fun getFilm(filmID: Int, callback: Callback<FilmDetailDTO>) {

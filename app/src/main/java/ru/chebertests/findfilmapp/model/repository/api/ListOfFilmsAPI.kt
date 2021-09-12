@@ -11,6 +11,7 @@ import ru.chebertests.findfilmapp.model.dto.GenresDTO
 private const val FIELD_API_KEY = "api_key"
 private const val FIELD_LANG = "language"
 private const val FIELD_GENRES = "with_genres"
+private const val FIELD_PAGE = "page"
 private const val FIELD_ADULT = "include_adult"
 private const val ENDPOINT_LIST_FILMS = "discover/movie"
 private const val ENDPOINT_ONE_FILM = "movie/{id}"
@@ -23,7 +24,8 @@ interface ListOfFilmsAPI {
         @Query(FIELD_API_KEY) apikey: String,
         @Query(FIELD_LANG) lang: String,
         @Query(FIELD_GENRES) genres: String?,
-        @Query(FIELD_ADULT) adult: Boolean
+        @Query(FIELD_PAGE) page: Int? = 1,
+        @Query(FIELD_ADULT) adult: Boolean = false
     ) : Call<FilmsDTO>
 
     @GET(ENDPOINT_ONE_FILM)

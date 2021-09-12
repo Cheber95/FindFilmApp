@@ -12,6 +12,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.bumptech.glide.Glide
+import ru.chebertests.findfilmapp.R
 import ru.chebertests.findfilmapp.databinding.FilmDetailFragmentBinding
 import ru.chebertests.findfilmapp.extensions.AppState
 import ru.chebertests.findfilmapp.model.Film
@@ -36,6 +37,14 @@ class FilmDetailFragment : Fragment() {
     ): View {
 
         _binding = FilmDetailFragmentBinding.inflate(inflater, container, false)
+
+        binding.randomFilmButton.setOnClickListener {
+            parentFragmentManager
+                .beginTransaction()
+                .replace(R.id.container_general, RandomFilmFragment.newInstance())
+                .addToBackStack(BUNDLE_EXTRA)
+                .commit()
+        }
 
         viewModel.getLiveData().observe(viewLifecycleOwner, Observer {
             renderFilm(it)

@@ -12,4 +12,6 @@
     <string name="item_bot_menu_history">История</string>
     <string name="save_comment_button_text">Сохранить отзыв</string>
     <string name="clear_history_button">Очистить историю</string>
+    <string name="random_film">Случайный фильм</string>
+    <string name="note_found">https://icon-library.com/images/no-image-icon/no-image-icon-26.jpg</string>
 </resources>
