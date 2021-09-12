@@ -31,7 +31,7 @@
                 android:layout_marginStart="@dimen/poster_details_margin"
                 android:layout_marginEnd="@dimen/poster_details_margin"
                 android:scaleType="centerCrop"
-                tools:src="@drawable/ic_launcher_background" />
+                tools:src="@drawable/ic_adult_enabled" />
 
             <TextView
                 android:id="@+id/country_film_full"
@@ -99,6 +99,14 @@
                 android:backgroundTint="@color/bottom_item_is_selected"
                 android:layout_margin="@dimen/card_list_margin"
                 android:text="@string/save_comment_button_text"/>
+
+            <Button
+                android:id="@+id/random_film_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:backgroundTint="@color/bottom_item_is_selected"
+                android:layout_margin="@dimen/card_list_margin"
+                android:text="@string/random_film"/>
 
         </LinearLayout>
 

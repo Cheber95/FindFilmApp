@@ -1,5 +1,6 @@
 package ru.chebertests.findfilmapp.viewmodel
 
+import android.app.Application
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
@@ -10,6 +11,8 @@ import androidx.lifecycle.ViewModel
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import ru.chebertests.findfilmapp.BuildConfig
+import ru.chebertests.findfilmapp.R
 import ru.chebertests.findfilmapp.extensions.AppState
 import ru.chebertests.findfilmapp.model.Film
 import ru.chebertests.findfilmapp.model.FilmDetail
@@ -22,6 +25,8 @@ import java.time.LocalDate
 import ru.chebertests.findfilmapp.app.App.Companion.getHistoryDao
 
 private const val SERVER_ERROR = "Ошибка загрузки данных"
+private const val IMG_NOT_FOUND =
+    "https://icon-library.com/images/no-image-icon/no-image-icon-26.jpg"
 
 class FilmsViewModel(
     private val filmsLiveData: MutableLiveData<AppState> = MutableLiveData(),
@@ -30,11 +35,15 @@ class FilmsViewModel(
     private val filmLocalRepository: LocalRepository = LocalRepositoryImpl(getHistoryDao())
 ) : ViewModel() {
 
+    private var numberOfPages: Int = 0
+
+    fun getNumberOfPages() = numberOfPages
+
     fun getLiveData() = filmsLiveData
 
-    fun getListFilmFromRemote(genres: String?, isAdult: Boolean) {
+    fun getListFilmFromRemote(genres: String?, page: Int, isAdult: Boolean) {
         filmsLiveData.value = AppState.Loading
-        filmRemoteRepository.getFilmsList(genres, isAdult, callbackList)
+        filmRemoteRepository.getFilmsList(genres, isAdult, page, callbackList)
     }
 
     fun getFilmDetailFromRemote(film: Film) {
@@ -149,6 +158,7 @@ class FilmsViewModel(
     @RequiresApi(Build.VERSION_CODES.O)
     private fun convertFilmsFromDTO(filmsDTO: FilmsDTO): List<Film> {
         val listFilms = mutableListOf<Film>()
+        filmsDTO.total_pages?.let { numberOfPages = it }
         for (film in filmsDTO.results!!) {
             var year: Int
             try {
@@ -157,13 +167,23 @@ class FilmsViewModel(
                 Log.e(e.toString(), film.title + film.id.toString())
                 year = 0
             }
+
             with(film) {
+                val filmID: Int = id ?: 0
+                val filmTitle: String = title ?: ""
+                val filmPoster: String = if (poster_path != null) {
+                    "https://image.tmdb.org/t/p/original/${poster_path}"
+                } else {
+                    IMG_NOT_FOUND
+                }
+                val filmVoteAverage: Double = vote_average ?: 0.0
+
                 listFilms.add(
                     Film(
-                        id!!,
-                        title!!,
-                        "https://image.tmdb.org/t/p/original/${poster_path!!}",
-                        vote_average!!,
+                        filmID,
+                        filmTitle,
+                        filmPoster,
+                        filmVoteAverage,
                         year
                     )
                 )
@@ -180,16 +200,38 @@ class FilmsViewModel(
             Log.e(e.toString(), filmDetailDTO.title + filmDetailDTO.id.toString())
             LocalDate.of(0, 1, 1)
         }
+
+        val id: Int = filmDetailDTO.id ?: 0
+        val title: String = filmDetailDTO.title ?: ""
+        val poster: String = if (filmDetailDTO.poster_path != null) {
+            "https://image.tmdb.org/t/p/original/${filmDetailDTO.poster_path}"
+        } else {
+            IMG_NOT_FOUND
+        }
+        val voteAverage: Double = filmDetailDTO.vote_average ?: 0.0
+        val budget: Int = filmDetailDTO.budget ?: 0
+        val genres: String = if (filmDetailDTO.genres != null) {
+            genresToString(filmDetailDTO.genres)
+        } else {
+            ""
+        }
+        val overview = filmDetailDTO.overview ?: ""
+        val countries: String = if (filmDetailDTO.production_countries != null) {
+            countriesToString(filmDetailDTO.production_countries)
+        } else {
+            ""
+        }
+
         return FilmDetail(
-            filmDetailDTO.id!!,
-            filmDetailDTO.title!!,
-            "https://image.tmdb.org/t/p/original/${filmDetailDTO.poster_path!!}",
-            filmDetailDTO.vote_average!!,
+            id,
+            title,
+            poster,
+            voteAverage,
             date,
-            filmDetailDTO.budget!!,
-            genresToString(filmDetailDTO.genres!!),
-            filmDetailDTO.overview!!,
-            countriesToString(filmDetailDTO.production_countries!!)
+            budget,
+            genres,
+            overview,
+            countries
         )
     }
 
@@ -214,5 +256,4 @@ class FilmsViewModel(
             .replace("[", "", true)
             .replace("]", "", true)
     }
-
 }
